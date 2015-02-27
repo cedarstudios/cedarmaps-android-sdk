@@ -3,6 +3,9 @@ package com.cedarstudios.cedarmaps.sample.fragment;
 import com.cedarstudios.cedarmaps.sample.Constants;
 import com.cedarstudios.cedarmaps.sample.MainActivity;
 import com.cedarstudios.cedarmaps.sample.R;
+import com.cedarstudios.cedarmapssdk.CedarMapsTileLayerListener;
+import com.cedarstudios.cedarmapssdk.config.Configuration;
+import com.cedarstudios.cedarmapssdk.config.ConfigurationBuilder;
 import com.cedarstudios.cedarmapssdk.tileprovider.CedarMapsTileLayer;
 import com.mapbox.mapboxsdk.api.ILatLng;
 import com.mapbox.mapboxsdk.geometry.LatLng;
@@ -31,30 +34,37 @@ public class MarkersTestFragment extends Fragment implements MapViewListener {
 
         mapView = (MapView) view.findViewById(R.id.mapView);
 
-        SharedPreferences pref = getActivity().getSharedPreferences(MainActivity.PREF_NAME,
-                Context.MODE_PRIVATE);
-        String accessToken = pref.getString(MainActivity.PREF_ID_ACCESS_TOKEN, "");
-        mapView.setAccessToken(accessToken);
+        Configuration
+                configuration = new ConfigurationBuilder()
+                .setClientId(Constants.CLIENT_ID)
+                .setClientSecret(Constants.CLIENT_SECRET)
+                .setMapId(Constants.MAPID_CEDARMAPS_STREETS)
+                .build();
 
-        CedarMapsTileLayer cedarMapsTileLayer = new CedarMapsTileLayer(Constants.MAPID_CEDARMAPS_STREETS);
-        mapView.setTileSource(cedarMapsTileLayer);
+        final CedarMapsTileLayer cedarMapsTileLayer = new CedarMapsTileLayer(configuration);
+        cedarMapsTileLayer.setTileLayerListener(new CedarMapsTileLayerListener() {
+            @Override
+            public void onPrepared(CedarMapsTileLayer tileLayer) {
+                mapView.setTileSource(tileLayer);
 
-        mapView.setCenter(new LatLng(35.703859, 51.408037));
-        mapView.setZoom(14);
+                mapView.setZoom(14);
+                mapView.setCenter(new LatLng(35.703859, 51.408037));
 
-        LatLng position = new LatLng(35.709086, 51.401471);
-        addMarker(position);
+                LatLng position = new LatLng(35.709086, 51.401471);
+                addMarker(position);
 
-        position = new LatLng(35.699781, 51.397565);
-        addMarker(position);
+                position = new LatLng(35.699781, 51.397565);
+                addMarker(position);
 
-        position = new LatLng(35.705636, 51.414174);
-        addMarker(position);
+                position = new LatLng(35.705636, 51.414174);
+                addMarker(position);
 
-        position = new LatLng(35.698631, 51.407693);
-        addMarker(position);
+                position = new LatLng(35.698631, 51.407693);
+                addMarker(position);
 
-        mapView.setMapViewListener(this);
+                mapView.setMapViewListener(MarkersTestFragment.this);
+            }
+        });
 
         return view;
     }

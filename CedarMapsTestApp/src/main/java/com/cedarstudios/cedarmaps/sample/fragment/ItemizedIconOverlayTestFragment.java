@@ -1,17 +1,16 @@
 package com.cedarstudios.cedarmaps.sample.fragment;
 
 import com.cedarstudios.cedarmaps.sample.Constants;
-import com.cedarstudios.cedarmaps.sample.MainActivity;
 import com.cedarstudios.cedarmaps.sample.R;
+import com.cedarstudios.cedarmapssdk.CedarMapsTileLayerListener;
+import com.cedarstudios.cedarmapssdk.config.Configuration;
+import com.cedarstudios.cedarmapssdk.config.ConfigurationBuilder;
 import com.cedarstudios.cedarmapssdk.tileprovider.CedarMapsTileLayer;
 import com.mapbox.mapboxsdk.geometry.LatLng;
-import com.mapbox.mapboxsdk.overlay.Icon;
 import com.mapbox.mapboxsdk.overlay.ItemizedIconOverlay;
 import com.mapbox.mapboxsdk.overlay.Marker;
 import com.mapbox.mapboxsdk.views.MapView;
 
-import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -29,47 +28,57 @@ public class ItemizedIconOverlayTestFragment extends Fragment {
             Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_map, container, false);
 
-        MapView mapView = (MapView) view.findViewById(R.id.mapView);
+        final MapView mapView = (MapView) view.findViewById(R.id.mapView);
 
-        SharedPreferences pref = getActivity().getSharedPreferences(MainActivity.PREF_NAME,
-                Context.MODE_PRIVATE);
-        String accessToken = pref.getString(MainActivity.PREF_ID_ACCESS_TOKEN, "");
-        mapView.setAccessToken(accessToken);
+        Configuration
+                configuration = new ConfigurationBuilder()
+                .setClientId(Constants.CLIENT_ID)
+                .setClientSecret(Constants.CLIENT_SECRET)
+                .setMapId(Constants.MAPID_CEDARMAPS_STREETS)
+                .build();
 
-        CedarMapsTileLayer cedarMapsTileLayer = new CedarMapsTileLayer(Constants.MAPID_CEDARMAPS_STREETS);
-        mapView.setTileSource(cedarMapsTileLayer);
+        final CedarMapsTileLayer cedarMapsTileLayer = new CedarMapsTileLayer(configuration);
+        cedarMapsTileLayer.setTileLayerListener(new CedarMapsTileLayerListener() {
+            @Override
+            public void onPrepared(CedarMapsTileLayer tileLayer) {
+                mapView.setTileSource(tileLayer);
 
-        mapView.setCenter(new LatLng(35.763269, 51.431954));
-        mapView.setZoom(15);
+                mapView.setZoom(15);
+                mapView.setCenter(new LatLng(35.762734, 51.432126));
 
-        ArrayList<Marker> markers = new ArrayList<Marker>();
-        markers.add(new Marker(mapView, getString(R.string.haghani_metro), null,
-                new LatLng(35.759926, 51.432512)));
-        markers.add(new Marker(mapView, getString(R.string.third_street), null,
-                new LatLng(35.762329, 51.429722)));
-        markers.add(new Marker(mapView, getString(R.string.haghani_way), null,
-                new LatLng(35.759055, 51.427362)));
-        markers.add(new Marker(mapView, getString(R.string.tabrizian), null,
-                new LatLng(35.762538, 51.435173)));
+                ArrayList<Marker> markers = new ArrayList<>();
 
-        for (Marker marker : markers) {
-            marker.setIcon(new Icon(getActivity(), Icon.Size.MEDIUM, "marker-stroked", "#068a0a"));
-        }
+                markers.add(new Marker(mapView, getString(R.string.haghani_metro), "",
+                        new LatLng(35.759926, 51.432512)));
+                markers.add(new Marker(mapView, getString(R.string.third_street), "",
+                        new LatLng(35.762329, 51.429722)));
+                markers.add(new Marker(mapView, getString(R.string.haghani_way), "",
+                        new LatLng(35.759055, 51.427362)));
+                markers.add(new Marker(mapView, getString(R.string.tabrizian), "",
+                        new LatLng(35.762538, 51.435173)));
 
-        mapView.addItemizedOverlay(new ItemizedIconOverlay(getActivity(), markers,
-                new ItemizedIconOverlay.OnItemGestureListener<Marker>() {
-                    @Override
-                    public boolean onItemSingleTapUp(int i, Marker marker) {
-                        Toast.makeText(getActivity(), marker.getTitle(), Toast.LENGTH_SHORT).show();
-                        return true;
-                    }
+                for (Marker marker : markers) {
+                    marker.setMarker(getResources().getDrawable(R.drawable.ic_location_on));
+                }
 
-                    @Override
-                    public boolean onItemLongPress(int i, Marker marker) {
-                        Toast.makeText(getActivity(), marker.getTitle(), Toast.LENGTH_LONG).show();
-                        return true;
-                    }
-                }));
+                mapView.addItemizedOverlay(new ItemizedIconOverlay(getActivity(), markers,
+                        new ItemizedIconOverlay.OnItemGestureListener<Marker>() {
+                            @Override
+                            public boolean onItemSingleTapUp(int i, Marker marker) {
+                                Toast.makeText(getActivity(), marker.getTitle(), Toast.LENGTH_SHORT)
+                                        .show();
+                                return true;
+                            }
+
+                            @Override
+                            public boolean onItemLongPress(int i, Marker marker) {
+                                Toast.makeText(getActivity(), marker.getTitle(), Toast.LENGTH_LONG)
+                                        .show();
+                                return true;
+                            }
+                        }));
+            }
+        });
 
         return view;
     }

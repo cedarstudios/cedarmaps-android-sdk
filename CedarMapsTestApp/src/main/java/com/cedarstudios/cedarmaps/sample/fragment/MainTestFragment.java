@@ -3,6 +3,10 @@ package com.cedarstudios.cedarmaps.sample.fragment;
 import com.cedarstudios.cedarmaps.sample.Constants;
 import com.cedarstudios.cedarmaps.sample.MainActivity;
 import com.cedarstudios.cedarmaps.sample.R;
+import com.cedarstudios.cedarmapssdk.CedarMaps;
+import com.cedarstudios.cedarmapssdk.CedarMapsTileLayerListener;
+import com.cedarstudios.cedarmapssdk.config.Configuration;
+import com.cedarstudios.cedarmapssdk.config.ConfigurationBuilder;
 import com.cedarstudios.cedarmapssdk.tileprovider.CedarMapsTileLayer;
 import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.mapboxsdk.views.MapView;
@@ -22,17 +26,25 @@ public class MainTestFragment extends Fragment {
             Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_map, container, false);
 
-        SharedPreferences pref = getActivity().getSharedPreferences(MainActivity.PREF_NAME,
-                Context.MODE_PRIVATE);
-        String accessToken = pref.getString(MainActivity.PREF_ID_ACCESS_TOKEN, "");
-        MapView mapView = (MapView) view.findViewById(R.id.mapView);
-        mapView.setAccessToken(accessToken);
+        final MapView mapView = (MapView) view.findViewById(R.id.mapView);
 
-        CedarMapsTileLayer cedarMapsTileLayer = new CedarMapsTileLayer(Constants.MAPID_CEDARMAPS_STREETS);
-        mapView.setTileSource(cedarMapsTileLayer);
+        Configuration
+                configuration = new ConfigurationBuilder()
+                .setClientId(Constants.CLIENT_ID)
+                .setClientSecret(Constants.CLIENT_SECRET)
+                .setMapId(Constants.MAPID_CEDARMAPS_STREETS)
+                .build();
 
-        mapView.setCenter(new LatLng(35.6961, 51.4231)); // center of tehran
-        mapView.setZoom(12);
+        final CedarMapsTileLayer cedarMapsTileLayer = new CedarMapsTileLayer(configuration);
+        cedarMapsTileLayer.setTileLayerListener(new CedarMapsTileLayerListener() {
+            @Override
+            public void onPrepared(CedarMapsTileLayer tileLayer) {
+                mapView.setTileSource(tileLayer);
+
+                mapView.setZoom(12);
+                mapView.setCenter(new LatLng(35.6961, 51.4231)); // center of tehran
+            }
+        });
 
         return view;
     }

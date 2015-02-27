@@ -1,7 +1,7 @@
 apply plugin: 'com.android.library'
 apply plugin: 'com.github.dcendents.android-maven'
 
-version = "0.7.0"
+version = "0.7.1"
 def siteUrl = 'http://cedarmaps.com'
 def gitUrl = 'http://cedarmaps.com/git'
 group = "com.cedarmaps"
@@ -13,8 +13,8 @@ android {
     defaultConfig {
         minSdkVersion 9
         targetSdkVersion 21
-        versionCode 1
-        versionName "0.7.0"
+        versionCode 2
+        versionName "0.7.1"
     }
     buildTypes {
     }
@@ -22,7 +22,7 @@ android {
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
-    compile('com.mapbox.mapboxsdk:mapbox-android-sdk:0.7.0@aar') {
+    compile('com.mapbox.mapboxsdk:mapbox-android-sdk:0.7.1@aar') {
         transitive = true
     }
 }

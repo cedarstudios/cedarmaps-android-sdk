@@ -6,6 +6,7 @@ import com.cedarstudios.cedarmaps.sample.R;
 import com.cedarstudios.cedarmapssdk.CedarMaps;
 import com.cedarstudios.cedarmapssdk.CedarMapsException;
 import com.cedarstudios.cedarmapssdk.CedarMapsFactory;
+import com.cedarstudios.cedarmapssdk.CedarMapsTileLayerListener;
 import com.cedarstudios.cedarmapssdk.config.Configuration;
 import com.cedarstudios.cedarmapssdk.config.ConfigurationBuilder;
 import com.cedarstudios.cedarmapssdk.tileprovider.CedarMapsTileLayer;
@@ -51,16 +52,23 @@ public class APIGeocodeTestFragment extends Fragment implements View.OnClickList
 
         mapView = (MapView) view.findViewById(R.id.mapView);
 
-        SharedPreferences pref = getActivity().getSharedPreferences(MainActivity.PREF_NAME,
-                Context.MODE_PRIVATE);
-        String accessToken = pref.getString(MainActivity.PREF_ID_ACCESS_TOKEN, "");
-        mapView.setAccessToken(accessToken);
+        Configuration
+                configuration = new ConfigurationBuilder()
+                .setClientId(Constants.CLIENT_ID)
+                .setClientSecret(Constants.CLIENT_SECRET)
+                .setMapId(Constants.MAPID_CEDARMAPS_STREETS)
+                .build();
 
-        CedarMapsTileLayer cedarMapsTileLayer = new CedarMapsTileLayer(Constants.MAPID_CEDARMAPS_STREETS);
-        mapView.setTileSource(cedarMapsTileLayer);
+        final CedarMapsTileLayer cedarMapsTileLayer = new CedarMapsTileLayer(configuration);
+        cedarMapsTileLayer.setTileLayerListener(new CedarMapsTileLayerListener() {
+            @Override
+            public void onPrepared(CedarMapsTileLayer tileLayer) {
+                mapView.setTileSource(tileLayer);
 
-        mapView.setCenter(new LatLng(35.6961, 51.4231)); // center of tehran
-        mapView.setZoom(12);
+                mapView.setZoom(12);
+                mapView.setCenter(new LatLng(35.6961, 51.4231)); // center of tehran
+            }
+        });
 
         view.findViewById(R.id.search).setOnClickListener(this);
         mSearchEditText = (EditText) view.findViewById(R.id.term);

@@ -16,7 +16,7 @@ repositories {
 }
 
 dependencies {
-    compile('com.cedarmaps:CedarMapsSDK:0.7.0@aar') {
+    compile('com.cedarmaps:CedarMapsSDK:0.7.1@aar') {
         transitive = true
     }
 }
@@ -50,7 +50,7 @@ client secret:
 com.cedarstudios.cedarmapssdk.config.Configuration
     configuration = new ConfigurationBuilder()
     .setClientId(clientId)
-    .setClientSecret(clinetSecret)
+    .setClientSecret(clientSecret)
     .build();
     CedarMapsFactory factory = new CedarMapsFactory(configuration);
     CedarMaps cedarMaps = factory.getInstance();
@@ -85,7 +85,6 @@ And then you can call it programmatically with
 
 ```java
 MapView mapView = (MapView) findViewById(R.id.mapview);
-mapView.setAccessToken(accessToken);
 ```
 
 #### On runtime
@@ -95,8 +94,20 @@ application and then use `CedarMapsTileLayer` as tile source.
 
 ```java
 MapView mapView = new MapView(context);
-mapView.setAccessToken(accessToken);
-mapView.setTileSource(new CedarMapsTileLayer(mapId));
+Configuration configuration = new ConfigurationBuilder()
+                .setClientId(Constants.CLIENT_ID)
+                .setClientSecret(Constants.CLIENT_SECRET)
+                .setMapId(Constants.MAPID_CEDARMAPS_STREETS)
+                .build();
+        final CedarMapsTileLayer cedarMapsTileLayer = new CedarMapsTileLayer(configuration);
+        cedarMapsTileLayer.setTileLayerListener(new CedarMapsTileLayerListener() {
+            @Override
+            public void onPrepared(CedarMapsTileLayer tileLayer) {
+                mapView.setTileSource(tileLayer);
+                mapView.setZoom(12);
+                mapView.setCenter(new LatLng(35.6961, 51.4231)); // center of tehran
+            }
+        });
 ```
 
 Currently you can use `cedarmaps.streets` as default mapId
