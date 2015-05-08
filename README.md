@@ -16,7 +16,7 @@ repositories {
 }
 
 dependencies {
-    compile('com.cedarmaps:CedarMapsSDK:0.7.1@aar') {
+    compile('com.cedarmaps:CedarMapsSDK:0.7.3@aar') {
         transitive = true
     }
 }
@@ -112,6 +112,19 @@ Configuration configuration = new ConfigurationBuilder()
 
 Currently you can use `cedarmaps.streets` as default mapId
 
+#### Changing API Base Url
+
+You can change API Base Url by setting it on configuration object:
+
+```java
+MapView mapView = new MapView(context);
+Configuration configuration = new ConfigurationBuilder()
+                .setAPIBaseURL(CUSTOM_API_URL)
+                .setClientId(Constants.CLIENT_ID)
+                .setClientSecret(Constants.CLIENT_SECRET)
+                .setMapId(Constants.MAPID_CEDARMAPS_STREETS)
+                .build();
+```
 
 ### Attention
 

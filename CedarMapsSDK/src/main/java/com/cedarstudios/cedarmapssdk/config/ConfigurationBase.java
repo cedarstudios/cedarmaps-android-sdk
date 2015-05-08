@@ -1,6 +1,5 @@
 package com.cedarstudios.cedarmapssdk.config;
 
-import com.cedarstudios.cedarmapssdk.CedarMapsConstants;
 
 import java.io.ObjectStreamException;
 import java.io.Serializable;
@@ -22,9 +21,9 @@ class ConfigurationBase implements Configuration, Serializable {
 
     private String mapId;
 
-    private String oAuth2TokenURL = CedarMapsConstants.CEDARMAPS_BASE_URL_V1 + "token";
-
     private String restBaseURL = CedarMapsConstants.CEDARMAPS_BASE_URL_V1;
+
+    private String oAuth2TokenURL = restBaseURL + "token";
 
 
     public void setOAuthClientId(String oAuthClientId) {
@@ -39,8 +38,13 @@ class ConfigurationBase implements Configuration, Serializable {
         this.mapId = mapId;
     }
 
+    public void setAPIBaseUrl(String baseUrl) {
+        restBaseURL = baseUrl;
+        setOAuth2TokenURL(restBaseURL + "token");
+    }
+
     @Override
-    public String getRestBaseURL() {
+    public String getAPIBaseURL() {
         return restBaseURL;
     }
 

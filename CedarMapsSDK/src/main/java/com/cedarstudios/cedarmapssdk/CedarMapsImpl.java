@@ -62,7 +62,7 @@ class CedarMapsImpl extends CedarMapsBaseImpl implements CedarMaps {
             throw new CedarMapsException(e);
         }
         String url = String
-                .format(Locale.ENGLISH, conf.getRestBaseURL() + "geocode/%s/%s.json",
+                .format(Locale.ENGLISH, conf.getAPIBaseURL() + "geocode/%s/%s.json",
                         conf.getMapId(), term);
 
         url += String.format(Locale.ENGLISH, "?limit=%s", limit);
@@ -88,7 +88,7 @@ class CedarMapsImpl extends CedarMapsBaseImpl implements CedarMaps {
     @Override
     public JSONObject geocode(double lat, double lng) throws CedarMapsException {
         String url = String.format(Locale.ENGLISH,
-                conf.getRestBaseURL() + "geocode/%1$s/%2$s,%3$s.json", conf.getMapId(), lat, lng);
+                conf.getAPIBaseURL() + "geocode/%1$s/%2$s,%3$s.json", conf.getMapId(), lat, lng);
 
         if (TextUtils.isEmpty(conf.getMapId())) {
             throw new CedarMapsException(new NullPointerException(

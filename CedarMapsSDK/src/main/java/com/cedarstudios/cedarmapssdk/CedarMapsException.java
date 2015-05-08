@@ -3,9 +3,6 @@ package com.cedarstudios.cedarmapssdk;
 
 import com.squareup.okhttp.Response;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.io.IOException;
 
 public class CedarMapsException extends Exception {

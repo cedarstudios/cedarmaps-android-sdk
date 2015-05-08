@@ -12,7 +12,7 @@ public interface Configuration extends AuthorizationConfiguration, Serializable 
 
     String getOAuth2AccessToken();
 
-    String getRestBaseURL();
+    String getAPIBaseURL();
 
     String getOAuth2Scope();
 

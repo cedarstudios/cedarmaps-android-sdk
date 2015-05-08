@@ -4,6 +4,12 @@ public final class ConfigurationBuilder {
 
     private ConfigurationBase configurationBase = new ConfigurationBase();
 
+    public ConfigurationBuilder setAPIBaseURL(String baseURL) {
+        checkNotBuilt();
+        configurationBase.setAPIBaseUrl(baseURL);
+        return this;
+    }
+
 
     public ConfigurationBuilder setClientId(String clientId) {
         checkNotBuilt();

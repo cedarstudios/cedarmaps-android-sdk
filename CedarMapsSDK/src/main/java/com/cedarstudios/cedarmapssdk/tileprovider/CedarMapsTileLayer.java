@@ -1,7 +1,6 @@
 package com.cedarstudios.cedarmapssdk.tileprovider;
 
 import com.cedarstudios.cedarmapssdk.CedarMaps;
-import com.cedarstudios.cedarmapssdk.CedarMapsConstants;
 import com.cedarstudios.cedarmapssdk.CedarMapsException;
 import com.cedarstudios.cedarmapssdk.CedarMapsFactory;
 import com.cedarstudios.cedarmapssdk.CedarMapsTileLayerListener;
@@ -202,7 +201,7 @@ public class CedarMapsTileLayer extends WebSourceTileLayer {
 
     private String getBrandedJSONURL() {
         String url = String
-                .format(Locale.ENGLISH, CedarMapsConstants.CEDARMAPS_BASE_URL_V1
+                .format(Locale.ENGLISH, mConfiguration.getAPIBaseURL()
                                 + "tiles/%s.json?access_token=%s&secure=1", mId,
                         CedarMapsUtils.getAccessToken());
         if (!mEnableSSL) {
@@ -263,7 +262,7 @@ public class CedarMapsTileLayer extends WebSourceTileLayer {
         if (!TextUtils.isEmpty(aUrl) && !aUrl.toLowerCase(Locale.US).contains("http://") && !aUrl
                 .toLowerCase(Locale.US).contains("https://")) {
             super.setURL(
-                    CedarMapsConstants.CEDARMAPS_BASE_URL_V1 + "tiles/" + aUrl
+                    mConfiguration.getAPIBaseURL() + "tiles/" + aUrl
                             + "/{z}/{x}/{y}.png?access_token="
                             + CedarMapsUtils.getAccessToken());
         } else {
