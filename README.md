@@ -16,7 +16,7 @@ repositories {
 }
 
 dependencies {
-    compile('com.cedarmaps:CedarMapsSDK:0.7.3@aar') {
+    compile('com.cedarmaps:CedarMapsSDK:0.7.4@aar') {
         transitive = true
     }
 }
@@ -76,8 +76,8 @@ To add the `MapView` as a layout element, add the following to your xml file:
 ```xml
 <com.mapbox.mapboxsdk.views.MapView
     android:id="@+id/mapView"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent" />
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" />
 ```
 
 
@@ -228,7 +228,7 @@ com.cedarstudios.cedarmapssdk.config.Configuration
 
 Then you should use `oAuth2Token` with each API call
 
-#### Geocode (Street Search)
+#### Geocode (Place Search)
 
 For finding a street you can easily call streetSearch method.
 
@@ -248,8 +248,47 @@ The output would be something like this for search term "همت":
 {
     "results": [
         {
+            "address": "اراضی عباس آباد,مهران,سید خندان,...",
+            "components": {
+                "city": "تهران",
+                "country": "ایران",
+                "districts": [
+                    "منطقه 4",
+                    "منطقه 3"
+                ],
+                "localities": [
+                    "اراضی عباس آباد",
+                    "مهران",
+                    "سید خندان",
+                    "پاسداران"
+                ],
+                "province": "تهران"
+            },
+            "id": 429874,
+            "location": {
+                "bb": {
+                    "ne": "35.756689799999997,51.464761500000002",
+                    "sw": "35.7491463,51.423702800000001"
+                },
+                "center": "35.749155599171999,51.428327751596903"
+            },
+            "name": "همت",
+            "type": "expressway"
+        },
+        {
             "address": "المهدی",
-            "id": 301568,
+            "components": {
+                "city": "تهران",
+                "country": "ایران",
+                "districts": [
+                    "منطقه 5"
+                ],
+                "localities": [
+                    "المهدی"
+                ],
+                "province": "تهران"
+            },
+            "id": 338756,
             "location": {
                 "bb": {
                     "ne": "35.770861600000003,51.323841700000003",
@@ -258,32 +297,6 @@ The output would be something like this for search term "همت":
                 "center": "35.770585227006897,51.323426168064202"
             },
             "name": "همت",
-            "type": "street"
-        },
-        {
-            "address": "کاظم آباد,مهران,اراضی عباس آباد,...",
-            "id": 397432,
-            "location": {
-                "bb": {
-                    "ne": "35.759246099999999,51.4836156",
-                    "sw": "35.7491463,51.423702800000001"
-                },
-                "center": "35.749153889854,51.427947792189102"
-            },
-            "name": "همت",
-            "type": "expressway"
-        },
-        {
-            "address": "ابوذر,شهرابی",
-            "id": 312434,
-            "location": {
-                "bb": {
-                    "ne": "35.679308300000002,51.480144099999997",
-                    "sw": "35.679143099999997,51.478227199999999"
-                },
-                "center": "35.679225700000003,51.479185649999998"
-            },
-            "name": "همتی",
             "type": "street"
         }
     ],
@@ -306,32 +319,190 @@ CedarMaps cedarMaps = new CedarMapsFactory(configuration).getInstance();
 searchResult = cedarMaps.geocode(lat, lng);
 ```
 
-The output would be something like this for 35.4,52.3:
+The output would be something like this for 35.716482704636825, 51.40897750854492:
 
 ```json
 {
     "result": {
-        "address": "تهران، شهرک غرب، خیابان دادمان، خیابان سپهر",
+        "address": "بن بست سروش - زرتشت",
         "city": "تهران",
         "components": [
             {
-                "long_name": "خیابان سپهر",
-                "short_name": "سپهر",
-                "type": "street"
+                "long_name": "بن بست سروش",
+                "short_name": "بن بست سروش",
+                "type": "residential"
             },
             {
-                "long_name": "خیابان دادمان",
-                "short_name": "دادمان",
-                "type": "steet"
+                "long_name": "زرتشت",
+                "short_name": "زرتشت",
+                "type": "primary"
             },
             {
-                "long_name": "شهرک غرب",
-                "short_name": "شهرک غرب",
+                "long_name": "بهجت آباد",
+                "short_name": "بهجت آباد",
                 "type": "locality"
+            },
+            {
+                "long_name": "تهران",
+                "short_name": "تهران",
+                "type": "city"
             }
         ],
-        "locality": "شهرک غرب"
+        "locality": "بهجت آباد",
+        "traffic_zone": {
+            "in_central": true,
+            "in_evenodd": true,
+            "name": "محدوده طرح ترافیک"
+        }
     },
+    "status": "OK"
+}
+```
+
+#### Distance
+     
+This method calculates the distance between points in meters. It can be called with up to 50 different points in a single request.
+
+The only supported profile is cedarmaps.driving which calculates the distance using car routing.
+
+```java
+Configuration configuration = new ConfigurationBuilder()
+        .setOAuth2AccessToken(oAuth2Token.getAccessToken())
+        .setOAuth2TokenType(oAuth2Token.getTokenType())
+        .setMapId(Constants.MAPID_CEDARMAPS_DRIVING)
+        .build();
+
+CedarMaps cedarMaps = new CedarMapsFactory(configuration).getInstance();
+searchResult = cedarMaps.distance(new LatLng(35.6961, 51.4231), new LatLng(35.744625, 51.374600));
+```
+
+Response elements:
+
+distance: The overall distance of the route, in meter
+time: The overall time of the route, in ms
+bbox: The bounding box of the route, format: minLon, minLat, maxLon, maxLat
+
+
+The output would be something like this:
+
+```json
+{
+    "result": {
+        "routes": [
+            {
+                "bbox": [
+                    51.368587,
+                    35.74982,
+                    51.41652,
+                    35.762383
+                ],
+                "distance": 7516.338,
+                "time": 500912
+            }
+        ]
+    },
+    "status": "OK"
+}
+```
+
+
+#### Locality
+
+It gives you all localities in a city wih geometry in GeoJSON format. This API call needs a valid access token.
+
+```java
+Configuration configuration = new ConfigurationBuilder()
+        .setOAuth2AccessToken(oAuth2Token.getAccessToken())
+        .setOAuth2TokenType(oAuth2Token.getTokenType())
+        .build();
+
+CedarMaps cedarMaps = new CedarMapsFactory(configuration).getInstance();
+searchResult = cedarMaps.locality("tehran");
+```
+
+Supported cities are: tehran, تهران
+
+The output would be something like this:
+
+```json
+{
+   "results":
+    [
+        {
+            "geometry": {
+                "coordinates": [
+                    [
+                        [
+                            51.3904371,
+                            35.6144373
+                        ],
+                        [
+                            51.3860088,
+                            35.6143914
+                        ],
+                        [
+                            51.3896979,
+                            35.6169901
+                        ],
+                        [
+                            51.3893829,
+                            35.6216496
+                        ],
+                        [
+                            51.3869264,
+                            35.622008
+                        ],
+                        [
+                            51.3863595,
+                            35.6257456
+                        ],
+                        [
+                            51.384092,
+                            35.6256944
+                        ],
+                        [
+                            51.38384,
+                            35.6281007
+                        ],
+                        [
+                            51.3821393,
+                            35.6281007
+                        ],
+                        [
+                            51.378927,
+                            35.6348585
+                        ],
+                        [
+                            51.378602,
+                            35.6384921
+                        ],
+                        [
+                            51.3822129,
+                            35.6370245
+                        ],
+                        [
+                            51.385588,
+                            35.637117
+                        ],
+                        [
+                            51.3859658,
+                            35.6313776
+                        ],
+                        [
+                            51.3916527,
+                            35.6247423
+                        ],
+                        [
+                            51.3904371,
+                            35.6144373
+                        ]
+                    ]
+                ],
+                "type": "Polygon"
+            },
+            "name": "اسفندیاری و بستان"
+        }
+    ],
     "status": "OK"
 }
 ```

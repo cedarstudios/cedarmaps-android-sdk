@@ -1,17 +1,19 @@
 package com.cedarstudios.cedarmapssdk;
 
+import android.text.TextUtils;
+import android.util.Pair;
+
 import com.cedarstudios.cedarmapssdk.auth.Authorization;
 import com.cedarstudios.cedarmapssdk.auth.NullAuthorization;
 import com.cedarstudios.cedarmapssdk.auth.OAuth2Authorization;
 import com.cedarstudios.cedarmapssdk.config.Configuration;
+import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
 import com.squareup.okhttp.Response;
 
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import android.text.TextUtils;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -30,30 +32,37 @@ class CedarMapsImpl extends CedarMapsBaseImpl implements CedarMaps {
     }
 
     @Override
-    public JSONObject geocode(String searchTerm, String city) throws CedarMapsException {
-        return geocode(searchTerm, city, Double.NaN, Double.NaN);
+    public JSONObject geocode(String searchTerm, String type) throws CedarMapsException {
+        return geocode(searchTerm, type, 30);
     }
 
     @Override
-    public JSONObject geocode(String searchTerm, String city, double lat, double lng)
+    public JSONObject geocode(String searchTerm, String type, int limit) throws CedarMapsException {
+        return geocode(searchTerm, null, -1, null, null, type, limit);
+    }
+
+    @Override
+    public JSONObject geocode(String searchTerm, LatLng location, float distance) throws CedarMapsException {
+        return geocode(searchTerm, location, distance, null, null, null, 30);
+    }
+
+    @Override
+    public JSONObject geocode(String searchTerm, LatLng location, float distance, String type) throws CedarMapsException {
+        return geocode(searchTerm, location, distance, null, null, type, 30);
+    }
+
+    @Override
+    public JSONObject geocode(String searchTerm, LatLng location, float distance, String type, int limit) throws CedarMapsException {
+        return geocode(searchTerm, location, distance, null, null, type, limit);
+    }
+
+    @Override
+    public JSONObject geocode(String searchTerm, LatLng location, float distance, LatLng ne, LatLng sw, String type, int limit)
             throws CedarMapsException {
-        return geocode(searchTerm, city, lat, lng, -1);
-    }
-
-    @Override
-    public JSONObject geocode(String searchTerm, String city, double lat, double lng,
-            long distance) throws CedarMapsException {
-        return geocode(searchTerm, city, lat, lng, distance, 30);
-    }
-
-    @Override
-    public JSONObject geocode(String searchTerm, String city, double lat, double lng,
-            long distance, int limit) throws CedarMapsException {
         String term;
 
         if (TextUtils.isEmpty(conf.getMapId())) {
-            throw new CedarMapsException(new NullPointerException(
-                    "mapId is null. please provide a mapId in configuration"));
+            throw new CedarMapsException(new NullPointerException("mapId is null. please provide a mapId in configuration"));
         }
 
         try {
@@ -61,20 +70,24 @@ class CedarMapsImpl extends CedarMapsBaseImpl implements CedarMaps {
         } catch (UnsupportedEncodingException e) {
             throw new CedarMapsException(e);
         }
-        String url = String
-                .format(Locale.ENGLISH, conf.getAPIBaseURL() + "geocode/%s/%s.json",
-                        conf.getMapId(), term);
+        String url = String.format(Locale.ENGLISH, conf.getAPIBaseURL() + "geocode/%s/%s.json", conf.getMapId(), term);
 
         url += String.format(Locale.ENGLISH, "?limit=%s", limit);
 
-        if (!TextUtils.isEmpty(city)) {
-            url += String.format(Locale.ENGLISH, "&city=%s", city);
+        if (location != null) {
+            url += String.format(Locale.ENGLISH, "&location=%1$s,%2$s&distance=%3$s", location.getLatitude(), location.getLongitude(), distance);
         }
-        if (!Double.valueOf(lat).isNaN() && !Double.valueOf(lng).isNaN()) {
-            url += String.format(Locale.ENGLISH, "&location=%1$s,%2$s", lat, lng);
+
+        if (ne != null) {
+            url += String.format(Locale.ENGLISH, "&ne=%1$s,%2$s", ne.getLatitude(), ne.getLongitude());
         }
-        if (distance != -1) {
-            url += String.format(Locale.ENGLISH, "&distance=%s", distance);
+
+        if (sw != null) {
+            url += String.format(Locale.ENGLISH, "&sw=%1$s,%2$s", sw.getLatitude(), sw.getLongitude());
+        }
+
+        if (!TextUtils.isEmpty(type)) {
+            url += String.format(Locale.ENGLISH, "&type=%s", type);
         }
 
         try {
@@ -87,13 +100,61 @@ class CedarMapsImpl extends CedarMapsBaseImpl implements CedarMaps {
     @SuppressWarnings("SpellCheckingInspection")
     @Override
     public JSONObject geocode(double lat, double lng) throws CedarMapsException {
-        String url = String.format(Locale.ENGLISH,
-                conf.getAPIBaseURL() + "geocode/%1$s/%2$s,%3$s.json", conf.getMapId(), lat, lng);
-
         if (TextUtils.isEmpty(conf.getMapId())) {
-            throw new CedarMapsException(new NullPointerException(
-                    "mapId is null. please provide a mapId in configuration"));
+            throw new CedarMapsException(new NullPointerException("mapId is null. please provide a mapId in configuration"));
         }
+
+        String url = String.format(Locale.ENGLISH, conf.getAPIBaseURL() + "geocode/%1$s/%2$s,%3$s.json", conf.getMapId(), lat, lng);
+
+        try {
+            return new JSONObject(getDataFromAPI(url));
+        } catch (JSONException e) {
+            throw new CedarMapsException(e);
+        }
+    }
+
+    @Override
+    public JSONObject distance(LatLng location1, LatLng location2) throws CedarMapsException {
+        if (TextUtils.isEmpty(conf.getMapId())) {
+            throw new CedarMapsException(new NullPointerException("mapId is null. please provide a mapId in configuration"));
+        }
+
+        String url = String.format(Locale.ENGLISH, conf.getAPIBaseURL() + "distance/%1$s/%2$s,%3$s;%4$s,%5$s", conf.getMapId(),
+                location1.getLatitude(), location1.getLongitude(), location2.getLatitude(), location2.getLongitude());
+
+        try {
+            return new JSONObject(getDataFromAPI(url));
+        } catch (JSONException e) {
+            throw new CedarMapsException(e);
+        }
+    }
+
+    @Override
+    public JSONObject distance(Pair<LatLng, LatLng>[] locationPairs) throws CedarMapsException {
+        if (TextUtils.isEmpty(conf.getMapId())) {
+            throw new CedarMapsException(new NullPointerException("mapId is null. please provide a mapId in configuration"));
+        }
+
+        String pairs = "";
+        String delimiter = "";
+        for (Pair<LatLng, LatLng> locationPair : locationPairs) {
+            pairs += delimiter + String.format(Locale.ENGLISH, "%1$s,%2$s;%3$s,%4$s", locationPair.first.getLatitude(),
+                    locationPair.first.getLongitude(), locationPair.second.getLatitude(), locationPair.second.getLatitude());
+            delimiter = "/";
+        }
+
+        String url = String.format(Locale.ENGLISH, conf.getAPIBaseURL() + "distance/%1$s/%2$s", conf.getMapId(), pairs);
+
+        try {
+            return new JSONObject(getDataFromAPI(url));
+        } catch (JSONException e) {
+            throw new CedarMapsException(e);
+        }
+    }
+
+    @Override
+    public JSONObject locality(String city) throws CedarMapsException {
+        String url = String.format(Locale.ENGLISH, conf.getAPIBaseURL() + "locality/%s.json", city);
 
         try {
             return new JSONObject(getDataFromAPI(url));

@@ -1,5 +1,22 @@
 package com.cedarstudios.cedarmaps.sample.fragment;
 
+import android.app.ProgressDialog;
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.os.AsyncTask;
+import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.text.TextUtils;
+import android.view.KeyEvent;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.EditText;
+import android.widget.TextView;
+import android.widget.Toast;
+
 import com.cedarstudios.cedarmaps.sample.Constants;
 import com.cedarstudios.cedarmaps.sample.MainActivity;
 import com.cedarstudios.cedarmaps.sample.R;
@@ -18,23 +35,6 @@ import com.mapbox.mapboxsdk.views.MapView;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import android.app.ProgressDialog;
-import android.content.Context;
-import android.content.SharedPreferences;
-import android.os.AsyncTask;
-import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.text.TextUtils;
-import android.view.KeyEvent;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.view.inputmethod.EditorInfo;
-import android.view.inputmethod.InputMethodManager;
-import android.widget.EditText;
-import android.widget.TextView;
-import android.widget.Toast;
-
 import java.util.ArrayList;
 
 public class APIAdvancedGeocodeTestFragment extends Fragment implements View.OnClickListener {
@@ -47,7 +47,7 @@ public class APIAdvancedGeocodeTestFragment extends Fragment implements View.OnC
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
-            Bundle savedInstanceState) {
+                             Bundle savedInstanceState) {
         final View view = inflater.inflate(R.layout.fragment_search, container, false);
 
         mapView = (MapView) view.findViewById(R.id.mapView);
@@ -139,8 +139,8 @@ public class APIAdvancedGeocodeTestFragment extends Fragment implements View.OnC
                         .build();
 
                 CedarMaps cedarMaps = new CedarMapsFactory(configuration).getInstance();
-                searchResult = cedarMaps.geocode(params[0], "tehran", 35.6961, 51.4231, 3000,
-                        5);
+                LatLng location = new LatLng(35.6961, 51.4231);
+                searchResult = cedarMaps.geocode(params[0], location, 50, null, 5);
             } catch (CedarMapsException e) {
                 e.printStackTrace();
             }
@@ -160,28 +160,19 @@ public class APIAdvancedGeocodeTestFragment extends Fragment implements View.OnC
                     JSONArray array = jsonObject.getJSONArray("results");
                     for (int i = 0; i < array.length(); i++) {
                         JSONObject item = array.getJSONObject(i);
-                        String[] location = item.getJSONObject("location").getString("center")
-                                .split(",");
-                        LatLng latLng = new LatLng(Double.parseDouble(location[0]),
-                                Double.parseDouble(location[1]));
+                        String[] location = item.getJSONObject("location").getString("center").split(",");
+                        LatLng latLng = new LatLng(Double.parseDouble(location[0]), Double.parseDouble(location[1]));
                         Marker marker = new Marker(mapView, item.getString("name"), "", latLng);
-                        marker.setIcon(
-                                new Icon(getActivity(), Icon.Size.MEDIUM, "marker-stroked",
-                                        "FF0000"));
+                        marker.setIcon(new Icon(getActivity(), Icon.Size.MEDIUM, "marker-stroked", "FF0000"));
                         mapView.addMarker(marker);
                     }
                 } else if (status.equals("ZERO_RESULTS")) {
-                    Toast.makeText(getActivity(), getString(R.string.no_results),
-                            Toast.LENGTH_LONG)
-                            .show();
+                    Toast.makeText(getActivity(), getString(R.string.no_results), Toast.LENGTH_LONG).show();
                 } else {
-                    Toast.makeText(getActivity(), getString(R.string.unkonown_error),
-                            Toast.LENGTH_LONG)
-                            .show();
+                    Toast.makeText(getActivity(), getString(R.string.unkonown_error), Toast.LENGTH_LONG).show();
                 }
             } catch (Exception e) {
-                Toast.makeText(getActivity(), getString(R.string.parse_error),
-                        Toast.LENGTH_LONG).show();
+                Toast.makeText(getActivity(), getString(R.string.parse_error), Toast.LENGTH_LONG).show();
             }
         }
     }
