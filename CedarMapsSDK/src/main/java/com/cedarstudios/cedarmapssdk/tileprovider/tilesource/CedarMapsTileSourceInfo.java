@@ -1,4 +1,10 @@
-package com.cedarstudios.cedarmapssdk.tileprovider;
+package com.cedarstudios.cedarmapssdk.tileprovider.tilesource;
+
+import android.content.Context;
+import android.os.AsyncTask;
+import android.text.TextUtils;
+import android.util.DisplayMetrics;
+import android.util.Log;
 
 import com.cedarstudios.cedarmapssdk.CedarMaps;
 import com.cedarstudios.cedarmapssdk.CedarMapsException;
@@ -7,73 +13,89 @@ import com.cedarstudios.cedarmapssdk.CedarMapsTileLayerListener;
 import com.cedarstudios.cedarmapssdk.auth.OAuth2Token;
 import com.cedarstudios.cedarmapssdk.config.Configuration;
 import com.cedarstudios.cedarmapssdk.utils.CedarMapsUtils;
-import com.mapbox.mapboxsdk.geometry.BoundingBox;
-import com.mapbox.mapboxsdk.geometry.LatLng;
-import com.mapbox.mapboxsdk.tileprovider.MapTile;
-import com.mapbox.mapboxsdk.tileprovider.MapTileCache;
-import com.mapbox.mapboxsdk.tileprovider.tilesource.TileLayer;
-import com.mapbox.mapboxsdk.tileprovider.tilesource.WebSourceTileLayer;
-import com.mapbox.mapboxsdk.util.NetworkUtils;
-import com.mapbox.mapboxsdk.util.constants.UtilConstants;
-import com.squareup.okhttp.Cache;
-import com.squareup.okhttp.OkHttpClient;
-import com.squareup.okhttp.Request;
-import com.squareup.okhttp.Response;
+import com.cedarstudios.cedarmapssdk.utils.NetworkUtils;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import android.graphics.Bitmap;
-import android.os.AsyncTask;
-import android.text.TextUtils;
-import android.util.Log;
+import org.osmdroid.api.IGeoPoint;
+import org.osmdroid.util.BoundingBoxE6;
+import org.osmdroid.util.GeoPoint;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Locale;
-import java.util.UUID;
 
-public class CedarMapsTileLayer extends WebSourceTileLayer {
+public class CedarMapsTileSourceInfo {
 
     private JSONObject tileJSON;
-
-    private Cache cache;
-
-    private String mAurl;
-
+    private final static String baseUrl = "http://api.cedarmaps.com/v1/tiles/";
+    private int mTileSize;
+    private String mTileExtension;
     private CedarMapsTileLayerListener mTileLayerListener;
+    private int mMinimumZoomLevel;
+    private int mMaximumZoomLevel;
+    private String mName;
+    private String mDescription;
+    private String mAttribution;
+    private String mLegend;
+    private IGeoPoint mCenter;
+    private BoundingBoxE6 mBoundingBox;
 
-    private CedarMapsTileLayer(final String pId, final String url, final boolean enableSSL) {
-        super(pId, url, enableSSL);
-
-        File cacheDir =
-                new File(System.getProperty("java.io.tmpdir"), UUID.randomUUID().toString());
-        try {
-            cache = NetworkUtils.getCache(cacheDir, 1024);
-        } catch (Exception e) {
-            Log.e(TAG, "Cache creation failed.", e);
-        }
-    }
-
-    public CedarMapsTileLayer(Configuration configuration) {
-        this(configuration.getMapId(), configuration.getMapId(), false);
+    public CedarMapsTileSourceInfo(Context context, Configuration configuration) {
         mConfiguration = configuration;
 
         if (TextUtils.isEmpty(mConfiguration.getMapId())) {
             throw new NullPointerException("You should init configuration with a valid mapId");
         }
-        if (TextUtils.isEmpty(mConfiguration.getOAuthClientId()) || TextUtils
-                .isEmpty(mConfiguration.getOAuthClientSecret())) {
-            throw new NullPointerException(
-                    "You should init configuration with a valid client id and secret");
+        if (TextUtils.isEmpty(mConfiguration.getOAuthClientId()) || TextUtils.isEmpty(mConfiguration.getOAuthClientSecret())) {
+            throw new NullPointerException("You should init configuration with a valid client id and secret");
         }
 
+        int density = context.getResources().getDisplayMetrics().densityDpi;
+        mTileExtension = density >= DisplayMetrics.DENSITY_HIGH ? "@2x.png" : ".png";
+        mTileSize = density >= DisplayMetrics.DENSITY_HIGH ? 512 : 256;
+
         init();
+    }
+
+    public int getMinimumZoomLevel() {
+        return mMinimumZoomLevel;
+    }
+
+    public int getMaximumZoomLevel() {
+        return mMaximumZoomLevel;
+    }
+
+    public String getName() {
+        return mName;
+    }
+
+    public String getDescription() {
+        return mDescription;
+    }
+
+    public String getAttribution() {
+        return mAttribution;
+    }
+
+    public String getLegend() {
+        return mLegend;
+    }
+
+    public String getBaseUrl() {
+        return baseUrl;
+    }
+
+    public IGeoPoint getCenter() {
+        return mCenter;
+    }
+
+    public BoundingBoxE6 getBoundingBox() {
+        return mBoundingBox;
     }
 
     private void init() {
@@ -81,12 +103,10 @@ public class CedarMapsTileLayer extends WebSourceTileLayer {
             new CedarMapsAuthenticateTask() {
                 @Override
                 protected void onPostExecute(Void aVoid) {
-                    CedarMapsTileLayer.super.initialize(mId, mAurl, mEnableSSL);
                     fetchBrandedJSONAndInit(getBrandedJSONURL());
                 }
             }.execute();
         } else {
-            CedarMapsTileLayer.super.initialize(mId, mAurl, mEnableSSL);
             fetchBrandedJSONAndInit(getBrandedJSONURL());
         }
     }
@@ -94,15 +114,6 @@ public class CedarMapsTileLayer extends WebSourceTileLayer {
     private void initWithTileJSON(JSONObject aTileJSON) {
         this.setTileJSON((aTileJSON != null) ? aTileJSON : new JSONObject());
         if (aTileJSON != null) {
-            if (this.tileJSON.has("tiles")) {
-                try {
-                    this.setURL(this.tileJSON.getJSONArray("tiles")
-                            .getString(0)
-                            .replace(".png", "{2x}.png"));
-                } catch (JSONException e) {
-                    Log.e(TAG, "Couldn't set tile url", e);
-                }
-            }
             mMinimumZoomLevel = getJSONFloat(this.tileJSON, "minzoom");
             mMaximumZoomLevel = getJSONFloat(this.tileJSON, "maxzoom");
             mName = this.tileJSON.optString("name");
@@ -112,16 +123,17 @@ public class CedarMapsTileLayer extends WebSourceTileLayer {
 
             double[] center = getJSONDoubleArray(this.tileJSON, "center", 3);
             if (center != null) {
-                mCenter = new LatLng(center[0], center[1], center[2]);
+                mCenter = new GeoPoint(center[0], center[1], center[2]);
             }
             double[] bounds = getJSONDoubleArray(this.tileJSON, "bounds", 4);
             if (bounds != null) {
-                mBoundingBox = new BoundingBox(bounds[3], bounds[2], bounds[1], bounds[0]);
+                mBoundingBox = new BoundingBoxE6(bounds[3], bounds[2], bounds[1], bounds[0]);
             }
         }
-        if (UtilConstants.DEBUGMODE) {
-            Log.d(TAG, "TileJSON " + this.tileJSON.toString());
-        }
+    }
+
+    public Configuration getConfiguration() {
+        return mConfiguration;
     }
 
     public JSONObject getTileJSON() {
@@ -132,11 +144,11 @@ public class CedarMapsTileLayer extends WebSourceTileLayer {
         this.tileJSON = aTileJSON;
     }
 
-    private float getJSONFloat(JSONObject JSON, String key) {
-        float defaultValue = 0;
+    private int getJSONFloat(JSONObject JSON, String key) {
+        int defaultValue = 0;
         if (JSON.has(key)) {
             try {
-                return (float) JSON.getDouble(key);
+                return JSON.getInt(key);
             } catch (JSONException e) {
                 return defaultValue;
             }
@@ -193,23 +205,33 @@ public class CedarMapsTileLayer extends WebSourceTileLayer {
             protected void onPostExecute(JSONObject jsonObject) {
                 initWithTileJSON(jsonObject);
                 if (mTileLayerListener != null) {
-                    mTileLayerListener.onPrepared(CedarMapsTileLayer.this);
+                    mTileLayerListener.onPrepared(CedarMapsTileSourceInfo.this);
                 }
             }
         }.execute(url);
     }
 
     private String getBrandedJSONURL() {
-        String url = String
-                .format(Locale.ENGLISH, mConfiguration.getAPIBaseURL()
-                                + "tiles/%s.json?access_token=%s&secure=1", mId,
-                        CedarMapsUtils.getAccessToken());
-        if (!mEnableSSL) {
-            url = url.replace("https://", "http://");
-            url = url.replace("&secure=1", "");
-        }
+        String url = String.format(Locale.ENGLISH, mConfiguration.getAPIBaseURL()
+                + "tiles/%s.json?access_token=%s", mConfiguration.getMapId(), CedarMapsUtils.getAccessToken());
 
         return url;
+    }
+
+    public String getMapId() {
+        return mConfiguration.getMapId();
+    }
+
+    public String getAccessToken() {
+        return CedarMapsUtils.getAccessToken();
+    }
+
+    public int getTitleSize() {
+        return mTileSize;
+    }
+
+    public String getImageExtension() {
+        return mTileExtension;
     }
 
     class RetrieveJSONTask extends AsyncTask<String, Void, JSONObject> {
@@ -218,7 +240,12 @@ public class CedarMapsTileLayer extends WebSourceTileLayer {
             InputStream in = null;
             try {
                 URL url = new URL(urls[0]);
-                HttpURLConnection connection = NetworkUtils.getHttpURLConnection(url, cache);
+                HttpURLConnection connection = NetworkUtils.getHttpURLConnection(url);
+                connection.connect();
+                if (connection.getResponseCode() == 401) {
+                    CedarMapsUtils.setAccessToken(null);
+                    return null;
+                }
                 in = connection.getInputStream();
                 byte[] response = readFully(in);
                 String result = new String(response, "UTF-8");
@@ -244,73 +271,9 @@ public class CedarMapsTileLayer extends WebSourceTileLayer {
 
     private Configuration mConfiguration;
 
-    @Deprecated
-    public CedarMapsTileLayer(String mapId) {
-        super(mapId, mapId, false);
-        throw new IllegalStateException("You should not use CedarMapsTileLayer(mapId) any more");
-    }
-
-    @Override
-    protected void initialize(final String pId, final String aUrl, final boolean enableSSL) {
-        mId = pId;
-        mAurl = aUrl;
-        mEnableSSL = enableSSL;
-    }
-
-    @Override
-    public TileLayer setURL(final String aUrl) {
-        if (!TextUtils.isEmpty(aUrl) && !aUrl.toLowerCase(Locale.US).contains("http://") && !aUrl
-                .toLowerCase(Locale.US).contains("https://")) {
-            super.setURL(
-                    mConfiguration.getAPIBaseURL() + "tiles/" + aUrl
-                            + "/{z}/{x}/{y}.png?access_token="
-                            + CedarMapsUtils.getAccessToken());
-        } else {
-            super.setURL(aUrl);
-        }
-        return this;
-    }
 
     public String getCacheKey() {
         return mId;
-    }
-
-    @Override
-    public Bitmap getBitmapFromURL(MapTile mapTile, String url, MapTileCache aCache) {
-        if (!url.startsWith("http")) {
-            return null;
-        }
-
-        Bitmap bitmap = super.getBitmapFromURL(mapTile, url, aCache);
-        if (bitmap != null) {
-            return bitmap;
-        }
-
-        OkHttpClient client = new OkHttpClient();
-        Request request = new Request.Builder()
-                .url(url)
-                .build();
-
-        Response response = null;
-        try {
-            response = client.newCall(request).execute();
-        } catch (Exception ignored) {
-        }
-        if (response != null && response.code() == 401) {
-            CedarMapsFactory factory = new CedarMapsFactory(mConfiguration);
-            CedarMaps cedarMaps = factory.getInstance();
-            try {
-                OAuth2Token oAuth2Token = cedarMaps.getOAuth2Token();
-                CedarMapsUtils.setAccessToken(oAuth2Token.getAccessToken());
-
-                init(); // load tile urls again
-
-                return super.getBitmapFromURL(mapTile, url, aCache);
-            } catch (CedarMapsException e) {
-                e.printStackTrace();
-            }
-        }
-        return null;
     }
 
     public void setTileLayerListener(CedarMapsTileLayerListener listener) {
@@ -326,17 +289,11 @@ public class CedarMapsTileLayer extends WebSourceTileLayer {
             try {
                 OAuth2Token oAuth2Token = cedarMaps.getOAuth2Token();
                 CedarMapsUtils.setAccessToken(oAuth2Token.getAccessToken());
+                Log.e(getClass().getSimpleName(), "token:" + oAuth2Token.getAccessToken());
             } catch (CedarMapsException e) {
                 e.printStackTrace();
             }
             return null;
-        }
-
-        @Override
-        protected void onPostExecute(Void aVoid) {
-            super.onPostExecute(aVoid);
-
-
         }
     }
 

@@ -4,9 +4,9 @@ package com.cedarstudios.cedarmapssdk;
 import android.util.Pair;
 
 import com.cedarstudios.cedarmapssdk.auth.OAuth2Support;
-import com.mapbox.mapboxsdk.geometry.LatLng;
 
 import org.json.JSONObject;
+import org.osmdroid.api.IGeoPoint;
 
 public interface CedarMaps extends OAuth2Support, CedarMapsBase {
 
@@ -49,7 +49,7 @@ public interface CedarMaps extends OAuth2Support, CedarMapsBase {
      * @return Results as JSONObject
      * @throws CedarMapsException
      */
-    JSONObject geocode(String searchTerm, LatLng location, float distance) throws CedarMapsException;
+    JSONObject geocode(String searchTerm, IGeoPoint location, float distance) throws CedarMapsException;
 
     /**
      * Forward Geocoding. This API call needs a valid access token.
@@ -61,7 +61,7 @@ public interface CedarMaps extends OAuth2Support, CedarMapsBase {
      * @return Results as JSONObject
      * @throws CedarMapsException
      */
-    JSONObject geocode(String searchTerm, LatLng location, float distance, String type) throws CedarMapsException;
+    JSONObject geocode(String searchTerm, IGeoPoint location, float distance, String type) throws CedarMapsException;
 
     /**
      * Forward Geocoding. This API call needs a valid access token.
@@ -74,7 +74,7 @@ public interface CedarMaps extends OAuth2Support, CedarMapsBase {
      * @return Results as JSONObject
      * @throws CedarMapsException
      */
-    JSONObject geocode(String searchTerm, LatLng location, float distance, String type, int limit) throws CedarMapsException;
+    JSONObject geocode(String searchTerm, IGeoPoint location, float distance, String type, int limit) throws CedarMapsException;
 
 
     /**
@@ -90,10 +90,10 @@ public interface CedarMaps extends OAuth2Support, CedarMapsBase {
      * @return Results as JSONObject
      * @throws CedarMapsException
      */
-    JSONObject geocode(String searchTerm, LatLng location, float distance, LatLng ne, LatLng sw, String type, int limit) throws CedarMapsException;
+    JSONObject geocode(String searchTerm, IGeoPoint location, float distance, IGeoPoint ne, IGeoPoint sw, String type, int limit) throws CedarMapsException;
 
     /**
-     * Gives an address based on a provided LatLng pair. This API call needs a valid access token.
+     * Gives an address based on a provided IGeoPoint pair. This API call needs a valid access token.
      *
      * @param lat
      * @param lng
@@ -111,7 +111,7 @@ public interface CedarMaps extends OAuth2Support, CedarMapsBase {
      * @return Results as JSONObject
      * @throws CedarMapsException
      */
-    JSONObject distance(LatLng location1, LatLng location2) throws CedarMapsException;
+    JSONObject distance(IGeoPoint location1, IGeoPoint location2) throws CedarMapsException;
 
     /**
      * This method calculates the distance between points in meters. It can be called with up to 15 pairs
@@ -121,7 +121,7 @@ public interface CedarMaps extends OAuth2Support, CedarMapsBase {
      * @return Results as JSONObject
      * @throws CedarMapsException
      */
-    JSONObject distance(Pair<LatLng, LatLng>[] locationPairs) throws CedarMapsException;
+    JSONObject distance(Pair<IGeoPoint, IGeoPoint>[] locationPairs) throws CedarMapsException;
 
     /**
      * Gives all localities in a city wih geometry in GeoJSON format.

@@ -1,85 +1,48 @@
 package com.cedarstudios.cedarmaps.sample.fragment;
 
-import com.cedarstudios.cedarmaps.sample.Constants;
-import com.cedarstudios.cedarmaps.sample.R;
-import com.cedarstudios.cedarmapssdk.CedarMapsTileLayerListener;
-import com.cedarstudios.cedarmapssdk.config.Configuration;
-import com.cedarstudios.cedarmapssdk.config.ConfigurationBuilder;
-import com.cedarstudios.cedarmapssdk.tileprovider.CedarMapsTileLayer;
-import com.mapbox.mapboxsdk.geometry.LatLng;
-import com.mapbox.mapboxsdk.overlay.ItemizedIconOverlay;
-import com.mapbox.mapboxsdk.overlay.Marker;
-import com.mapbox.mapboxsdk.views.MapView;
-
-import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Toast;
+
+import com.cedarstudios.cedarmaps.sample.R;
+
+import org.osmdroid.util.GeoPoint;
+import org.osmdroid.views.overlay.ItemizedIconOverlay;
+import org.osmdroid.views.overlay.ItemizedOverlay;
+import org.osmdroid.views.overlay.OverlayItem;
 
 import java.util.ArrayList;
 
-public class ItemizedIconOverlayTestFragment extends Fragment {
-
-
+public class ItemizedIconOverlayTestFragment extends MainTestFragment {
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-            Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_map, container, false);
+    protected void onMapLoaded() {
+        mMapView.getController().setZoom(15);
+        mMapView.getController().setCenter(new GeoPoint(35.762734, 51.432126));
 
-        final MapView mapView = (MapView) view.findViewById(R.id.mapView);
+        final ArrayList<OverlayItem> items = new ArrayList<>();
+        items.add(new OverlayItem(getString(R.string.haghani_metro), "", new GeoPoint(35.759926, 51.432512)));
+        items.add(new OverlayItem(getString(R.string.third_street), "", new GeoPoint(35.762329, 51.429722)));
+        items.add(new OverlayItem(getString(R.string.haghani_way), "", new GeoPoint(35.759055, 51.427362)));
+        items.add(new OverlayItem(getString(R.string.tabrizian), "", new GeoPoint(35.762538, 51.435173)));
 
-        Configuration
-                configuration = new ConfigurationBuilder()
-                .setClientId(Constants.CLIENT_ID)
-                .setClientSecret(Constants.CLIENT_SECRET)
-                .setMapId(Constants.MAPID_CEDARMAPS_STREETS)
-                .build();
+			/* OnTapListener for the Markers, shows a simple Toast. */
+        ItemizedOverlay<OverlayItem> mMyLocationOverlay = new ItemizedIconOverlay<>(items,
+                new ItemizedIconOverlay.OnItemGestureListener<OverlayItem>() {
+                    @Override
+                    public boolean onItemSingleTapUp(final int index, final OverlayItem item) {
+                        Toast.makeText(getActivity(), "Item '" + item.getTitle() + "' (index=" + index
+                                + ") got single tapped up", Toast.LENGTH_LONG).show();
+                        return true; // We 'handled' this event.
+                    }
 
-        final CedarMapsTileLayer cedarMapsTileLayer = new CedarMapsTileLayer(configuration);
-        cedarMapsTileLayer.setTileLayerListener(new CedarMapsTileLayerListener() {
-            @Override
-            public void onPrepared(CedarMapsTileLayer tileLayer) {
-                mapView.setTileSource(tileLayer);
+                    @Override
+                    public boolean onItemLongPress(final int index, final OverlayItem item) {
+                        Toast.makeText(getActivity(), "Item '" + item.getTitle() + "' (index=" + index
+                                + ") got long pressed", Toast.LENGTH_LONG).show();
+                        return false;
+                    }
+                }, getContext());
+        mMapView.getOverlays().add(mMyLocationOverlay);
 
-                mapView.setZoom(15);
-                mapView.setCenter(new LatLng(35.762734, 51.432126));
 
-                ArrayList<Marker> markers = new ArrayList<>();
-
-                markers.add(new Marker(mapView, getString(R.string.haghani_metro), "",
-                        new LatLng(35.759926, 51.432512)));
-                markers.add(new Marker(mapView, getString(R.string.third_street), "",
-                        new LatLng(35.762329, 51.429722)));
-                markers.add(new Marker(mapView, getString(R.string.haghani_way), "",
-                        new LatLng(35.759055, 51.427362)));
-                markers.add(new Marker(mapView, getString(R.string.tabrizian), "",
-                        new LatLng(35.762538, 51.435173)));
-
-                for (Marker marker : markers) {
-                    marker.setMarker(getResources().getDrawable(R.drawable.ic_location_on));
-                }
-
-                mapView.addItemizedOverlay(new ItemizedIconOverlay(getActivity(), markers,
-                        new ItemizedIconOverlay.OnItemGestureListener<Marker>() {
-                            @Override
-                            public boolean onItemSingleTapUp(int i, Marker marker) {
-                                Toast.makeText(getActivity(), marker.getTitle(), Toast.LENGTH_SHORT)
-                                        .show();
-                                return true;
-                            }
-
-                            @Override
-                            public boolean onItemLongPress(int i, Marker marker) {
-                                Toast.makeText(getActivity(), marker.getTitle(), Toast.LENGTH_LONG)
-                                        .show();
-                                return true;
-                            }
-                        }));
-            }
-        });
-
-        return view;
     }
+
 }

@@ -99,8 +99,7 @@ abstract class CedarMapsBaseImpl implements CedarMapsBase, Serializable, OAuth2S
 
     private OAuth2Support getOAuth2() {
         if (!(auth instanceof OAuth2Support)) {
-            throw new IllegalStateException(
-                    "OAuth client id/secret combination not supplied");
+            throw new IllegalStateException("OAuth client id/secret combination not supplied");
         }
         return (OAuth2Support) auth;
     }

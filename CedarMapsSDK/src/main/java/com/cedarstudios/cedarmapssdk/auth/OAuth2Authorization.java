@@ -3,15 +3,16 @@ package com.cedarstudios.cedarmapssdk.auth;
 
 import com.cedarstudios.cedarmapssdk.CedarMapsException;
 import com.cedarstudios.cedarmapssdk.config.Configuration;
-import com.squareup.okhttp.FormEncodingBuilder;
-import com.squareup.okhttp.OkHttpClient;
-import com.squareup.okhttp.Request;
-import com.squareup.okhttp.RequestBody;
-import com.squareup.okhttp.Response;
 
 import org.json.JSONObject;
 
 import java.io.Serializable;
+
+import okhttp3.FormBody;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 
 public class OAuth2Authorization implements Authorization, Serializable, OAuth2Support {
 
@@ -41,7 +42,7 @@ public class OAuth2Authorization implements Authorization, Serializable, OAuth2S
         }
 
         OkHttpClient client = new OkHttpClient();
-        RequestBody formBody = new FormEncodingBuilder()
+        RequestBody formBody = new FormBody.Builder()
                 .add("client_id", clientId)
                 .add("client_secret", clientSecret)
                 .build();

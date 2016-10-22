@@ -5,7 +5,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
+import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -23,52 +23,29 @@ import com.cedarstudios.cedarmaps.sample.R;
 import com.cedarstudios.cedarmapssdk.CedarMaps;
 import com.cedarstudios.cedarmapssdk.CedarMapsException;
 import com.cedarstudios.cedarmapssdk.CedarMapsFactory;
-import com.cedarstudios.cedarmapssdk.CedarMapsTileLayerListener;
 import com.cedarstudios.cedarmapssdk.config.Configuration;
 import com.cedarstudios.cedarmapssdk.config.ConfigurationBuilder;
-import com.cedarstudios.cedarmapssdk.tileprovider.CedarMapsTileLayer;
-import com.mapbox.mapboxsdk.geometry.LatLng;
-import com.mapbox.mapboxsdk.overlay.Icon;
-import com.mapbox.mapboxsdk.overlay.Marker;
-import com.mapbox.mapboxsdk.views.MapView;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.osmdroid.util.GeoPoint;
+import org.osmdroid.views.overlay.Marker;
 
 import java.util.ArrayList;
 
-public class APIAdvancedGeocodeTestFragment extends Fragment implements View.OnClickListener {
+public class APIAdvancedGeocodeTestFragment extends MainTestFragment implements View.OnClickListener {
 
     private EditText mSearchEditText;
-
-    private MapView mapView;
-
     private ArrayList<Marker> mMarkers = new ArrayList<>();
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        final View view = inflater.inflate(R.layout.fragment_search, container, false);
+    public View onCreateView(LayoutInflater inflater, final ViewGroup container, Bundle savedInstanceState) {
+        return inflater.inflate(R.layout.fragment_search, container, false);
+    }
 
-        mapView = (MapView) view.findViewById(R.id.mapView);
-
-        Configuration
-                configuration = new ConfigurationBuilder()
-                .setClientId(Constants.CLIENT_ID)
-                .setClientSecret(Constants.CLIENT_SECRET)
-                .setMapId(Constants.MAPID_CEDARMAPS_STREETS)
-                .build();
-
-        final CedarMapsTileLayer cedarMapsTileLayer = new CedarMapsTileLayer(configuration);
-        cedarMapsTileLayer.setTileLayerListener(new CedarMapsTileLayerListener() {
-            @Override
-            public void onPrepared(CedarMapsTileLayer tileLayer) {
-                mapView.setTileSource(tileLayer);
-
-                mapView.setZoom(12);
-                mapView.setCenter(new LatLng(35.6961, 51.4231)); // center of tehran
-            }
-        });
+    @Override
+    public void onViewCreated(final View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
 
         view.findViewById(R.id.search).setOnClickListener(this);
         mSearchEditText = (EditText) view.findViewById(R.id.term);
@@ -83,15 +60,12 @@ public class APIAdvancedGeocodeTestFragment extends Fragment implements View.OnC
                 return false;
             }
         });
-
-        return view;
     }
 
     @Override
     public void onClick(View v) {
         if (!TextUtils.isEmpty(mSearchEditText.getText().toString())) {
-            InputMethodManager inputManager = (InputMethodManager) getActivity()
-                    .getSystemService(Context.INPUT_METHOD_SERVICE);
+            InputMethodManager inputManager = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
             inputManager.hideSoftInputFromWindow(getActivity().getCurrentFocus().getWindowToken(),
                     InputMethodManager.HIDE_NOT_ALWAYS);
 
@@ -102,14 +76,12 @@ public class APIAdvancedGeocodeTestFragment extends Fragment implements View.OnC
     }
 
     private void clearMarkers() {
-        for (Marker marker : mMarkers) {
-            mapView.removeMarker(marker);
-        }
-        mapView.setZoom(12);
-        mapView.setCenter(new LatLng(35.6961, 51.4231)); // center of tehran
+        mMapView.getOverlays().clear();
+        mMapView.invalidate();
+        mMapView.getController().setZoom(12);
+        mMapView.getController().animateTo(new GeoPoint(35.6961, 51.4231)); // center of tehran
 
         mMarkers.clear();
-        mapView.clear();
     }
 
     class SearchAsyncTask extends AsyncTask<String, Void, JSONObject> {
@@ -139,7 +111,7 @@ public class APIAdvancedGeocodeTestFragment extends Fragment implements View.OnC
                         .build();
 
                 CedarMaps cedarMaps = new CedarMapsFactory(configuration).getInstance();
-                LatLng location = new LatLng(35.6961, 51.4231);
+                GeoPoint location = new GeoPoint(35.6961, 51.4231);
                 searchResult = cedarMaps.geocode(params[0], location, 50, null, 5);
             } catch (CedarMapsException e) {
                 e.printStackTrace();
@@ -161,10 +133,11 @@ public class APIAdvancedGeocodeTestFragment extends Fragment implements View.OnC
                     for (int i = 0; i < array.length(); i++) {
                         JSONObject item = array.getJSONObject(i);
                         String[] location = item.getJSONObject("location").getString("center").split(",");
-                        LatLng latLng = new LatLng(Double.parseDouble(location[0]), Double.parseDouble(location[1]));
-                        Marker marker = new Marker(mapView, item.getString("name"), "", latLng);
-                        marker.setIcon(new Icon(getActivity(), Icon.Size.MEDIUM, "marker-stroked", "FF0000"));
-                        mapView.addMarker(marker);
+                        GeoPoint latLng = new GeoPoint(Double.parseDouble(location[0]), Double.parseDouble(location[1]));
+                        Marker marker = new Marker(mMapView);
+                        marker.setPosition(latLng);
+                        marker.setTitle(item.getString("name"));
+                        mMapView.getOverlays().add(marker);
                     }
                 } else if (status.equals("ZERO_RESULTS")) {
                     Toast.makeText(getActivity(), getString(R.string.no_results), Toast.LENGTH_LONG).show();

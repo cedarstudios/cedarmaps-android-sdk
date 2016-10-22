@@ -1,5 +1,22 @@
 package com.cedarstudios.cedarmaps.sample;
 
+import android.content.SharedPreferences;
+import android.os.AsyncTask;
+import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.view.View;
+import android.support.design.widget.NavigationView;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
+import android.view.Menu;
+import android.view.MenuItem;
+
 import com.cedarstudios.cedarmaps.sample.fragment.APIAdvancedGeocodeTestFragment;
 import com.cedarstudios.cedarmaps.sample.fragment.APIGeocodeTestFragment;
 import com.cedarstudios.cedarmaps.sample.fragment.APIReverseGeocodeTestFragment;
@@ -12,35 +29,9 @@ import com.cedarstudios.cedarmapssdk.CedarMapsFactory;
 import com.cedarstudios.cedarmapssdk.auth.OAuth2Token;
 import com.cedarstudios.cedarmapssdk.config.ConfigurationBuilder;
 
-import android.content.SharedPreferences;
-import android.content.res.Configuration;
-import android.os.AsyncTask;
-import android.os.Bundle;
-import android.support.v4.app.ActionBarDrawerToggle;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBarActivity;
-import android.view.MenuItem;
-import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.ListView;
+public class MainActivity extends AppCompatActivity
+        implements NavigationView.OnNavigationItemSelectedListener {
 
-import java.util.ArrayList;
-
-
-public class MainActivity extends ActionBarActivity {
-
-    private DrawerLayout mDrawerLayout;
-
-    private ActionBarDrawerToggle mDrawerToggle;
-
-    private ListView mDrawerList;
-
-    private ArrayList<String> testFragmentNames;
-
-    private int selectedFragmentIndex = 0;
 
     public static final String PREF_NAME = "pref";
 
@@ -51,115 +42,58 @@ public class MainActivity extends ActionBarActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        /*
-           MapView.setDebugMode(true); //make sure to call this before the view is created!
-           */
         setContentView(R.layout.activity_main);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
 
-        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
-        mDrawerList = (ListView) findViewById(R.id.left_drawer);
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        drawer.setDrawerListener(toggle);
+        toggle.syncState();
 
-        // Set the adapter for the list view
-        testFragmentNames = new ArrayList<>();
-        testFragmentNames.add(getString(R.string.mainTestMap));
-        testFragmentNames.add(getString(R.string.markersTestMap));
-        testFragmentNames.add(getString(R.string.itemizedOverlayTestMap));
-        testFragmentNames.add(getString(R.string.searchAPI));
-        testFragmentNames.add(getString(R.string.streetSearchAPIAdvanced));
-        testFragmentNames.add(getString(R.string.reverseGeocode));
+        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        navigationView.setNavigationItemSelectedListener(this);
 
-        mDrawerList
-                .setAdapter(new ArrayAdapter<>(this, R.layout.drawer_list_item, testFragmentNames));
-        // Set the list's click listener
-        mDrawerList.setOnItemClickListener(new DrawerItemClickListener());
-
-        mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout,
-                R.mipmap.ic_drawer, R.string.drawerOpen, R.string.drawerClose) {
-
-            /** Called when a drawer has settled in a completely closed state. */
-            public void onDrawerClosed(View view) {
-                super.onDrawerClosed(view);
-                getSupportActionBar().setTitle(testFragmentNames.get(selectedFragmentIndex));
-            }
-
-            /** Called when a drawer has settled in a completely open state. */
-            public void onDrawerOpened(View drawerView) {
-                super.onDrawerOpened(drawerView);
-                getSupportActionBar().setTitle(R.string.app_name);
-            }
-        };
-
-        // Set the drawer toggle as the DrawerListener
-        mDrawerLayout.setDrawerListener(mDrawerToggle);
-
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setHomeButtonEnabled(true);
-
-        // Set MainTestFragment
-        selectItem(0);
 
         new CedarMapsAuthenticateTask().execute();
 
+        onNavigationItemSelected(navigationView.getMenu().getItem(0));
     }
 
     @Override
-    protected void onPostCreate(Bundle savedInstanceState) {
-        super.onPostCreate(savedInstanceState);
-        // Sync the toggle state after onRestoreInstanceState has occurred.
-        mDrawerToggle.syncState();
-    }
-
-    @Override
-    public void onConfigurationChanged(Configuration newConfig) {
-        super.onConfigurationChanged(newConfig);
-        mDrawerToggle.onConfigurationChanged(newConfig);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Pass the event to ActionBarDrawerToggle, if it returns
-        // true, then it has handled the app icon touch event
-        if (mDrawerToggle.onOptionsItemSelected(item)) {
-            return true;
-        }
-        // Handle your other action bar items...
-
-        return super.onOptionsItemSelected(item);
-    }
-
-    private class DrawerItemClickListener implements ListView.OnItemClickListener {
-
-        @Override
-        public void onItemClick(AdapterView parent, View view, int position, long id) {
-            selectItem(position);
+    public void onBackPressed() {
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        if (drawer.isDrawerOpen(GravityCompat.START)) {
+            drawer.closeDrawer(GravityCompat.START);
+        } else {
+            super.onBackPressed();
         }
     }
 
-    /**
-     * Swaps fragments in the main content view
-     */
-    private void selectItem(int position) {
-        selectedFragmentIndex = position;
-        // Create a new fragment and specify the planet to show based on position
+    @SuppressWarnings("StatementWithEmptyBody")
+    @Override
+    public boolean onNavigationItemSelected(MenuItem item) {
+        // Handle navigation view item clicks here.
         Fragment fragment;
 
-        switch (position) {
-            case 0:
+        switch (item.getItemId()) {
+            case R.id.mainTestMap:
                 fragment = new MainTestFragment();
                 break;
-            case 1:
+            case R.id.markersTestMap:
                 fragment = new MarkersTestFragment();
                 break;
-            case 2:
+            case R.id.itemizedOverlayTestMap:
                 fragment = new ItemizedIconOverlayTestFragment();
                 break;
-            case 3:
+            case R.id.searchAPI:
                 fragment = new APIGeocodeTestFragment();
                 break;
-            case 4:
+            case R.id.streetSearchAPIAdvanced:
                 fragment = new APIAdvancedGeocodeTestFragment();
                 break;
-            case 5:
+            case R.id.reverseGeocode:
                 fragment = new APIReverseGeocodeTestFragment();
                 break;
             default:
@@ -173,15 +107,10 @@ public class MainActivity extends ActionBarActivity {
                 .replace(R.id.content_frame, fragment)
                 .commit();
 
-        // Highlight the selected item, update the title, and close the drawer
-        mDrawerList.setItemChecked(position, true);
-        setTitle(testFragmentNames.get(position));
-        mDrawerLayout.closeDrawer(mDrawerList);
-    }
-
-    @Override
-    public void setTitle(CharSequence title) {
-        getSupportActionBar().setTitle(title);
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        drawer.closeDrawer(GravityCompat.START);
+        setTitle(item.getTitle());
+        return true;
     }
 
     class CedarMapsAuthenticateTask extends AsyncTask<Void, Void, Void> {

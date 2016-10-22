@@ -1,28 +1,11 @@
 package com.cedarstudios.cedarmaps.sample.fragment;
 
-import com.cedarstudios.cedarmaps.sample.Constants;
-import com.cedarstudios.cedarmaps.sample.MainActivity;
-import com.cedarstudios.cedarmaps.sample.R;
-import com.cedarstudios.cedarmapssdk.CedarMaps;
-import com.cedarstudios.cedarmapssdk.CedarMapsException;
-import com.cedarstudios.cedarmapssdk.CedarMapsFactory;
-import com.cedarstudios.cedarmapssdk.CedarMapsTileLayerListener;
-import com.cedarstudios.cedarmapssdk.config.Configuration;
-import com.cedarstudios.cedarmapssdk.config.ConfigurationBuilder;
-import com.cedarstudios.cedarmapssdk.tileprovider.CedarMapsTileLayer;
-import com.mapbox.mapboxsdk.geometry.LatLng;
-import com.mapbox.mapboxsdk.overlay.Icon;
-import com.mapbox.mapboxsdk.overlay.Marker;
-import com.mapbox.mapboxsdk.views.MapView;
-
-import org.json.JSONObject;
-
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
+import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -34,44 +17,39 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.cedarstudios.cedarmaps.sample.Constants;
+import com.cedarstudios.cedarmaps.sample.MainActivity;
+import com.cedarstudios.cedarmaps.sample.R;
+import com.cedarstudios.cedarmapssdk.CedarMaps;
+import com.cedarstudios.cedarmapssdk.CedarMapsException;
+import com.cedarstudios.cedarmapssdk.CedarMapsFactory;
+import com.cedarstudios.cedarmapssdk.config.Configuration;
+import com.cedarstudios.cedarmapssdk.config.ConfigurationBuilder;
+
+import org.json.JSONObject;
+import org.osmdroid.util.GeoPoint;
+import org.osmdroid.views.overlay.Marker;
+
 import java.util.ArrayList;
 
-public class APIReverseGeocodeTestFragment extends Fragment implements View.OnClickListener {
+public class APIReverseGeocodeTestFragment extends MainTestFragment implements View.OnClickListener {
 
     private EditText mSearchEditText;
 
-    private MapView mapView;
-
     private ArrayList<Marker> mMarkers = new ArrayList<>();
 
+    @Override
+    public View onCreateView(LayoutInflater inflater, final ViewGroup container, Bundle savedInstanceState) {
+        return inflater.inflate(R.layout.fragment_search, container, false);
+    }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-            Bundle savedInstanceState) {
-        final View view = inflater.inflate(R.layout.fragment_search, container, false);
-
-        mapView = (MapView) view.findViewById(R.id.mapView);
-
-        Configuration
-                configuration = new ConfigurationBuilder()
-                .setClientId(Constants.CLIENT_ID)
-                .setClientSecret(Constants.CLIENT_SECRET)
-                .setMapId(Constants.MAPID_CEDARMAPS_STREETS)
-                .build();
-
-        final CedarMapsTileLayer cedarMapsTileLayer = new CedarMapsTileLayer(configuration);
-        cedarMapsTileLayer.setTileLayerListener(new CedarMapsTileLayerListener() {
-            @Override
-            public void onPrepared(CedarMapsTileLayer tileLayer) {
-                mapView.setTileSource(tileLayer);
-
-                mapView.setZoom(12);
-                mapView.setCenter(new LatLng(35.6961, 51.4231)); // center of tehran
-            }
-        });
+    public void onViewCreated(final View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
 
         view.findViewById(R.id.search).setOnClickListener(this);
         mSearchEditText = (EditText) view.findViewById(R.id.term);
+        mSearchEditText.setText("35.759926, 51.432512");
         mSearchEditText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
 
             @Override
@@ -83,17 +61,12 @@ public class APIReverseGeocodeTestFragment extends Fragment implements View.OnCl
                 return false;
             }
         });
-
-        mSearchEditText.setText("35.759926, 51.432512");
-
-        return view;
     }
 
     @Override
     public void onClick(View v) {
         if (!TextUtils.isEmpty(mSearchEditText.getText().toString())) {
-            InputMethodManager inputManager = (InputMethodManager) getActivity()
-                    .getSystemService(Context.INPUT_METHOD_SERVICE);
+            InputMethodManager inputManager = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
             inputManager.hideSoftInputFromWindow(getActivity().getCurrentFocus().getWindowToken(),
                     InputMethodManager.HIDE_NOT_ALWAYS);
 
@@ -104,14 +77,12 @@ public class APIReverseGeocodeTestFragment extends Fragment implements View.OnCl
     }
 
     private void clearMarkers() {
-        for (Marker marker : mMarkers) {
-            mapView.removeMarker(marker);
-        }
-        mapView.setZoom(12);
-        mapView.setCenter(new LatLng(35.6961, 51.4231)); // center of tehran
+        mMapView.getOverlays().clear();
+        mMapView.invalidate();
+        mMapView.getController().setZoom(12);
+        mMapView.getController().animateTo(new GeoPoint(35.6961, 51.4231)); // center of tehran
 
         mMarkers.clear();
-        mapView.clear();
     }
 
     class ReverseGeocodeAsyncTask extends AsyncTask<String, Void, JSONObject> {
@@ -143,8 +114,7 @@ public class APIReverseGeocodeTestFragment extends Fragment implements View.OnCl
                 CedarMaps cedarMaps = new CedarMapsFactory(configuration).getInstance();
                 String[] latlng = params[0].split(",");
 
-                searchResult = cedarMaps.geocode(Double.parseDouble(latlng[0]),
-                        Double.parseDouble(latlng[1]));
+                searchResult = cedarMaps.geocode(Double.parseDouble(latlng[0]), Double.parseDouble(latlng[1]));
             } catch (CedarMapsException e) {
                 e.printStackTrace();
             }
@@ -161,33 +131,22 @@ public class APIReverseGeocodeTestFragment extends Fragment implements View.OnCl
             try {
                 String status = jsonObject.getString("status");
                 if (status.equals("OK")) {
-                    String address = jsonObject
-                            .getJSONObject("result")
-                            .getString("address");
+                    String address = jsonObject.getJSONObject("result").getString("address");
 
-                    String[] latlng = mSearchEditText.getText().toString().trim().split(",");
-                    Marker marker = new Marker(mapView, address, "",
-                            new LatLng(Double.parseDouble(latlng[0]),
-                                    Double.parseDouble(latlng[1])));
-                    marker.setIcon(
-                            new Icon(getActivity(), Icon.Size.MEDIUM, "marker-stroked",
-                                    "000FFF"));
-                    mapView.addMarker(marker);
-                    Toast.makeText(getActivity(), address,
-                            Toast.LENGTH_LONG)
-                            .show();
+                    String[] location = mSearchEditText.getText().toString().trim().split(",");
+                    GeoPoint latLng = new GeoPoint(Double.parseDouble(location[0]), Double.parseDouble(location[1]));
+                    Marker marker = new Marker(mMapView);
+                    marker.setPosition(latLng);
+                    marker.setTitle(address);
+                    mMapView.getOverlays().add(marker);
+                    Toast.makeText(getActivity(), address, Toast.LENGTH_LONG).show();
                 } else if (status.equals("ZERO_RESULTS")) {
-                    Toast.makeText(getActivity(), getString(R.string.no_results),
-                            Toast.LENGTH_LONG)
-                            .show();
+                    Toast.makeText(getActivity(), getString(R.string.no_results), Toast.LENGTH_LONG).show();
                 } else {
-                    Toast.makeText(getActivity(), getString(R.string.unkonown_error),
-                            Toast.LENGTH_LONG)
-                            .show();
+                    Toast.makeText(getActivity(), getString(R.string.unkonown_error), Toast.LENGTH_LONG).show();
                 }
             } catch (Exception e) {
-                Toast.makeText(getActivity(), getString(R.string.parse_error),
-                        Toast.LENGTH_LONG).show();
+                Toast.makeText(getActivity(), getString(R.string.parse_error), Toast.LENGTH_LONG).show();
             }
         }
     }

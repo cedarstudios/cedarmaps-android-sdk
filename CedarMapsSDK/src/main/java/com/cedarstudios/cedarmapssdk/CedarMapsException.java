@@ -1,9 +1,10 @@
 package com.cedarstudios.cedarmapssdk;
 
 
-import com.squareup.okhttp.Response;
 
 import java.io.IOException;
+
+import okhttp3.Response;
 
 public class CedarMapsException extends Exception {
 

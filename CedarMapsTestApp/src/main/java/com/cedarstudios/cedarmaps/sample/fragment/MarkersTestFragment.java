@@ -1,108 +1,36 @@
 package com.cedarstudios.cedarmaps.sample.fragment;
 
-import com.cedarstudios.cedarmaps.sample.Constants;
-import com.cedarstudios.cedarmaps.sample.MainActivity;
+import android.support.v4.content.ContextCompat;
+
 import com.cedarstudios.cedarmaps.sample.R;
-import com.cedarstudios.cedarmapssdk.CedarMapsTileLayerListener;
-import com.cedarstudios.cedarmapssdk.config.Configuration;
-import com.cedarstudios.cedarmapssdk.config.ConfigurationBuilder;
-import com.cedarstudios.cedarmapssdk.tileprovider.CedarMapsTileLayer;
-import com.mapbox.mapboxsdk.api.ILatLng;
-import com.mapbox.mapboxsdk.geometry.LatLng;
-import com.mapbox.mapboxsdk.overlay.Icon;
-import com.mapbox.mapboxsdk.overlay.Marker;
-import com.mapbox.mapboxsdk.views.MapController;
-import com.mapbox.mapboxsdk.views.MapView;
-import com.mapbox.mapboxsdk.views.MapViewListener;
 
-import android.content.Context;
-import android.content.SharedPreferences;
-import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
+import org.osmdroid.util.GeoPoint;
+import org.osmdroid.views.overlay.Marker;
 
-public class MarkersTestFragment extends Fragment implements MapViewListener {
-
-    private MapView mapView;
-
+public class MarkersTestFragment extends MainTestFragment {
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-            Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_map, container, false);
+    protected void onMapLoaded() {
 
-        mapView = (MapView) view.findViewById(R.id.mapView);
+        mMapView.getController().setZoom(14);
+        mMapView.getController().setCenter(new GeoPoint(35.703859, 51.408037));
 
-        Configuration
-                configuration = new ConfigurationBuilder()
-                .setClientId(Constants.CLIENT_ID)
-                .setClientSecret(Constants.CLIENT_SECRET)
-                .setMapId(Constants.MAPID_CEDARMAPS_STREETS)
-                .build();
+        GeoPoint position = new GeoPoint(35.709086, 51.401471);
+        addMarker(position);
 
-        final CedarMapsTileLayer cedarMapsTileLayer = new CedarMapsTileLayer(configuration);
-        cedarMapsTileLayer.setTileLayerListener(new CedarMapsTileLayerListener() {
-            @Override
-            public void onPrepared(CedarMapsTileLayer tileLayer) {
-                mapView.setTileSource(tileLayer);
+        position = new GeoPoint(35.699781, 51.397565);
+        addMarker(position);
 
-                mapView.setZoom(14);
-                mapView.setCenter(new LatLng(35.703859, 51.408037));
+        position = new GeoPoint(35.705636, 51.414174);
+        addMarker(position);
 
-                LatLng position = new LatLng(35.709086, 51.401471);
-                addMarker(position);
-
-                position = new LatLng(35.699781, 51.397565);
-                addMarker(position);
-
-                position = new LatLng(35.705636, 51.414174);
-                addMarker(position);
-
-                position = new LatLng(35.698631, 51.407693);
-                addMarker(position);
-
-                mapView.setMapViewListener(MarkersTestFragment.this);
-            }
-        });
-
-        return view;
+        position = new GeoPoint(35.698631, 51.407693);
+        addMarker(position);
     }
 
-    public void addMarker(LatLng position) {
-        Marker marker = new Marker(mapView, "", "", position);
-        marker.setIcon(new Icon(getActivity(), Icon.Size.SMALL, "marker-stroked", "FF0000"));
-        mapView.addMarker(marker);
-    }
-
-    @Override
-    public void onShowMarker(MapView mapView, Marker marker) {
-
-    }
-
-    @Override
-    public void onHideMarker(MapView mapView, Marker marker) {
-
-    }
-
-    @Override
-    public void onTapMarker(MapView mapView, Marker marker) {
-        MapController mapController = new MapController(mapView);
-        mapController.animateTo(marker.getPoint());
-    }
-
-    @Override
-    public void onLongPressMarker(MapView mapView, Marker marker) {
-
-    }
-
-    @Override
-    public void onTapMap(MapView mapView, ILatLng iLatLng) {
-
-    }
-
-    @Override
-    public void onLongPressMap(MapView mapView, ILatLng iLatLng) {
-
+    private void addMarker(GeoPoint position) {
+        Marker marker = new Marker(mMapView);
+        marker.setIcon(ContextCompat.getDrawable(getContext(), R.drawable.marker_default));
+        marker.setPosition(position);
+        mMapView.getOverlays().add(marker);
     }
 }

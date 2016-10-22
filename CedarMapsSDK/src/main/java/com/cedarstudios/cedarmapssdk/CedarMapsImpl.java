@@ -7,17 +7,18 @@ import com.cedarstudios.cedarmapssdk.auth.Authorization;
 import com.cedarstudios.cedarmapssdk.auth.NullAuthorization;
 import com.cedarstudios.cedarmapssdk.auth.OAuth2Authorization;
 import com.cedarstudios.cedarmapssdk.config.Configuration;
-import com.mapbox.mapboxsdk.geometry.LatLng;
-import com.squareup.okhttp.OkHttpClient;
-import com.squareup.okhttp.Request;
-import com.squareup.okhttp.Response;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.osmdroid.api.IGeoPoint;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.Locale;
+
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 
 class CedarMapsImpl extends CedarMapsBaseImpl implements CedarMaps {
@@ -42,22 +43,22 @@ class CedarMapsImpl extends CedarMapsBaseImpl implements CedarMaps {
     }
 
     @Override
-    public JSONObject geocode(String searchTerm, LatLng location, float distance) throws CedarMapsException {
+    public JSONObject geocode(String searchTerm, IGeoPoint location, float distance) throws CedarMapsException {
         return geocode(searchTerm, location, distance, null, null, null, 30);
     }
 
     @Override
-    public JSONObject geocode(String searchTerm, LatLng location, float distance, String type) throws CedarMapsException {
+    public JSONObject geocode(String searchTerm, IGeoPoint location, float distance, String type) throws CedarMapsException {
         return geocode(searchTerm, location, distance, null, null, type, 30);
     }
 
     @Override
-    public JSONObject geocode(String searchTerm, LatLng location, float distance, String type, int limit) throws CedarMapsException {
+    public JSONObject geocode(String searchTerm, IGeoPoint location, float distance, String type, int limit) throws CedarMapsException {
         return geocode(searchTerm, location, distance, null, null, type, limit);
     }
 
     @Override
-    public JSONObject geocode(String searchTerm, LatLng location, float distance, LatLng ne, LatLng sw, String type, int limit)
+    public JSONObject geocode(String searchTerm, IGeoPoint location, float distance, IGeoPoint ne, IGeoPoint sw, String type, int limit)
             throws CedarMapsException {
         String term;
 
@@ -114,7 +115,7 @@ class CedarMapsImpl extends CedarMapsBaseImpl implements CedarMaps {
     }
 
     @Override
-    public JSONObject distance(LatLng location1, LatLng location2) throws CedarMapsException {
+    public JSONObject distance(IGeoPoint location1, IGeoPoint location2) throws CedarMapsException {
         if (TextUtils.isEmpty(conf.getMapId())) {
             throw new CedarMapsException(new NullPointerException("mapId is null. please provide a mapId in configuration"));
         }
@@ -130,14 +131,14 @@ class CedarMapsImpl extends CedarMapsBaseImpl implements CedarMaps {
     }
 
     @Override
-    public JSONObject distance(Pair<LatLng, LatLng>[] locationPairs) throws CedarMapsException {
+    public JSONObject distance(Pair<IGeoPoint, IGeoPoint>[] locationPairs) throws CedarMapsException {
         if (TextUtils.isEmpty(conf.getMapId())) {
             throw new CedarMapsException(new NullPointerException("mapId is null. please provide a mapId in configuration"));
         }
 
         String pairs = "";
         String delimiter = "";
-        for (Pair<LatLng, LatLng> locationPair : locationPairs) {
+        for (Pair<IGeoPoint, IGeoPoint> locationPair : locationPairs) {
             pairs += delimiter + String.format(Locale.ENGLISH, "%1$s,%2$s;%3$s,%4$s", locationPair.first.getLatitude(),
                     locationPair.first.getLongitude(), locationPair.second.getLatitude(), locationPair.second.getLatitude());
             delimiter = "/";

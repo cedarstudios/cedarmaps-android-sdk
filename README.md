@@ -16,7 +16,7 @@ repositories {
 }
 
 dependencies {
-    compile('com.cedarmaps:CedarMapsSDK:0.7.4@aar') {
+    compile('com.cedarmaps:CedarMapsSDK:1.0.0@aar') {
         transitive = true
     }
 }
@@ -29,17 +29,21 @@ Ensure the following *core* permissions are requested in your `AndroidManifest.x
 
 ```xml
 <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+<uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
 <uses-permission android:name="android.permission.INTERNET" />
 <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 ```
 
-If your project needs to access location services, it'll also need the following permissions too:
+If your App needs to access location services, it'll also need the following permissions too:
 
 ```xml
 <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-<uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
 ```
+
+**Android 6.0+ devices require you have to check for "dangerous" permissions at runtime.**
+CedarMaps requires the following dangerous permissions:
+`WRITE_EXTERNAL_STORAGE`, `ACCESS_COARSE_LOCATION` and `ACCESS_FINE_LOCATION`.  
 
 ### Getting Access Token
 
@@ -62,9 +66,6 @@ Then you should use `oAuth2Token.getAccessToken()` in mapView or API
 
 ### The MapView
 
-This project is based on [Mapbox Android SDK](https://www.mapbox.com/mapbox-android-sdk/) and provides
-CedarMapsTileLayer and extra API over Mapbox.
-
 The `MapView` class is the key component of this library. It behaves
 like any other `ViewGroup` and its behavior can be changed statically with an
 [XML layout](http://developer.android.com/guide/topics/ui/declaring-layout.html)
@@ -74,7 +75,7 @@ file, or programmatically during runtime.
 To add the `MapView` as a layout element, add the following to your xml file:
 
 ```xml
-<com.mapbox.mapboxsdk.views.MapView
+<com.cedarstudios.cedarmapssdk.view.MapView
     android:id="@+id/mapView"
     android:layout_width="match_parent"
     android:layout_height="match_parent" />
@@ -85,32 +86,20 @@ And then you can call it programmatically with
 
 ```java
 MapView mapView = (MapView) findViewById(R.id.mapview);
-```
-
-#### On runtime
-
-On runtime you can create a new MapView by specifying the context of the
-application and then use `CedarMapsTileLayer` as tile source.
-
-```java
-MapView mapView = new MapView(context);
-Configuration configuration = new ConfigurationBuilder()
-                .setClientId(Constants.CLIENT_ID)
-                .setClientSecret(Constants.CLIENT_SECRET)
-                .setMapId(Constants.MAPID_CEDARMAPS_STREETS)
-                .build();
-        final CedarMapsTileLayer cedarMapsTileLayer = new CedarMapsTileLayer(configuration);
-        cedarMapsTileLayer.setTileLayerListener(new CedarMapsTileLayerListener() {
+final CedarMapsTileSourceInfo cedarMapsTileSourceInfo = new CedarMapsTileSourceInfo(getContext(), configuration);
+        cedarMapsTileSourceInfo.setTileLayerListener(new CedarMapsTileLayerListener() {
             @Override
-            public void onPrepared(CedarMapsTileLayer tileLayer) {
-                mapView.setTileSource(tileLayer);
-                mapView.setZoom(12);
-                mapView.setCenter(new LatLng(35.6961, 51.4231)); // center of tehran
+            public void onPrepared(CedarMapsTileSourceInfo tileLayer) {
+
+                CedarMapsTileSource cedarMapsTileSource = new CedarMapsTileSource(tileLayer);
+                CedarMapTileProvider provider = new CedarMapTileProvider(getContext(), cedarMapsTileSource);
+                mapView.setTileProvider(provider);
+                mapView.getController().setZoom(12);
+                mapView.getController().setCenter(new GeoPoint(35.6961, 51.4231)); // center of Tehran
+
             }
         });
 ```
-
-Currently you can use `cedarmaps.streets` as default mapId
 
 #### Changing API Base Url
 
@@ -125,90 +114,13 @@ Configuration configuration = new ConfigurationBuilder()
                 .setMapId(Constants.MAPID_CEDARMAPS_STREETS)
                 .build();
 ```
+CedarMaps SDK is based on [OpenStreetMap Android SDK v5.2](https://github.com/osmdroid/osmdroid) and provides `CedarMapsTileSource` and extra API over OpenStreetMap. 
+For more information about how to use MapView and other components please see [OpenStreetMap Wiki](https://github.com/osmdroid/osmdroid/wiki)
 
 ### Attention
 
-currently CedarMaps supports Tehran city. so be sure that you handle the map screen limit by the
-boundingBox and the default map center location:
+currently CedarMaps supports Tehran city. 
 
-```java
-// center of tehran
-mapView.setCenter(new LatLng(35.6961, 51.4231));
-// limit scrollable area
-mapView.setScrollableAreaLimit(new BoundingBox(north, east, south, west));
-```
-
-### Overlays
-
-Anything visual that is displayed over the map, maintaining its geographical
-position, we call it an `Overlay`. To access a MapView's overlays
-at any point during runtime, use:
-
-```java
-mapView.getOverlays();
-```
-
-#### Markers
-
-Adding a marker with the default styling is as simple as calling this
-for every marker you want to add:
-
-```java
-Marker marker = new Marker(mapView, title, description, LatLng)
-mapView.addMarker(marker);
-```
-
-#### Location overlay
-
-The location of the user can be displayed on the view using `UserLocationOverlay`
-
-```java
-GpsLocationProvider myLocationProvider = new GpsLocationProvider(getActivity());
-UserLocationOverlay myLocationOverlay = new UserLocationOverlay(myLocationProvider, mapView);
-myLocationOverlay.enableMyLocation();
-myLocationOverlay.setDrawAccuracyEnabled(true);
-mapView.getOverlays().add(myLocationOverlay);
-```
-
-#### Paths
-
-Paths are treated as any other `Overlay`, and are drawn like this:
-
-```java
-PathOverlay line = new PathOverlay(Color.RED, this);
-line.addPoint(new LatLng(51.2, 0.1));
-line.addPoint(new LatLng(51.7, 0.3));
-mapView.getOverlays().add(line);
-```
-
-#### Drawing anything into the map
-
-To add anything with a higher degree of  customization you can declare your own `Overlay`
-subclass and define what to draw by overriding the `draw` method. It will
-give you a Canvas object for you to add anything to it:
-
-```java
-class AnyOverlay extends Overlay{
-    @Override
-    protected void draw(Canvas canvas, MapView mapView, boolean shadow) {
-        //do anything with the Canvas object
-    }
-}
-```
-
-### Screen rotation
-
-By default, every time the screen is rotated, Android will call `onCreate`
-and return all states in the app to their inital values. This includes current
-zoom level and position of the MapView. The simplest way to avoid this is adding
-this line to your `AndroidManifest.xml`, inside `<activity>`:
-
-	android:configChanges="orientation|screenSize|uiMode"
-
-Alternatively you can override the methods `onSaveInstanceState()` and
-`onRestoreInstanceState()` to have broader control of the saved states in the app.
-See this [StackOverflow question](http://stackoverflow.com/questions/4096169/onsaveinstancestate-and-onrestoreinstancestate) for
-more information on these methods
 
 =======
 ### CedarMaps API
@@ -515,6 +427,6 @@ the **TestApp**.  It contains many different examples of new functionality or ju
 
 The source code for these tests / examples is located under the CedarMapsTestApp directory.
 
-You can find more useful examples on [Mapbox SDK Test App](https://github.com/mapbox/mapbox-android-sdk/tree/mb-pages/MapboxAndroidSDKTestApp)
+You can find more useful examples on [OpenStreetMap SDK Test App](https://github.com/osmdroid/osmdroid)
 
 
