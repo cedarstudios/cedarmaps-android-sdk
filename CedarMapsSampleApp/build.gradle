@@ -8,7 +8,7 @@ android {
         applicationId "com.cedarmaps.sdksampleapp"
         minSdkVersion 15
         targetSdkVersion 26
-        versionCode 1
+        versionCode 96072501
         versionName "1.0"
 
         vectorDrawables.useSupportLibrary = true

@@ -89,10 +89,10 @@ public class ForwardGeocodeFragment extends Fragment {
         mMapView.getMapAsync(new OnMapReadyCallback() {
             @Override
             public void onMapReady(MapboxMap mapboxMap) {
+                mMapboxMap = mapboxMap;
+
                 mMapboxMap.setMaxZoomPreference(17);
                 mMapboxMap.setMinZoomPreference(6);
-
-                mMapboxMap = mapboxMap;
             }
         });
 
