@@ -1,0 +1,34 @@
+<resources>
+    <string name="app_name">CedarMaps - Dev</string>
+    <string name="title_map">Map</string>
+    <string name="title_reverse">Reverse</string>
+    <string name="title_forward">Search</string>
+    <string name="title_direction">Direction</string>
+    <string name="title_static">Static</string>
+
+    <string name="no_results">Nothing found</string>
+    <string name="unknown_error">Unknown Error</string>
+    <string name="parse_error">Parsing Error</string>
+    <string name="searching">Searching …</string>
+
+    <string name="search_for">Search</string>
+    <string name="latitude">Latitude: </string>
+    <string name="longitude">Longitude: </string>
+    <string name="zoom">Zoom: </string>
+    <string name="zoom_level_hint">6 to 17</string>
+    <string name="create_static_map">Create Static Map</string>
+    <string name="static_maps_hint">Tap on Create button to fetch an image for the entered coordinate</string>
+    <string name="center_point">Center Point</string>
+    <string name="map_download_failed">Error in downloading map</string>
+    <string name="fill_all_fields">Please fill all fields.</string>
+    <string name="distance">Distance:</string>
+    <string name="reset_points">Reset</string>
+    <string name="direction_hint">Tap on the map to choose starting and ending points</string>
+    <string name="direction_receiving_failed">Error in receiving direction data</string>
+    <string name="search_in_places">Search in places</string>
+    <string name="province">استان</string>
+    <string name="comma">،</string>
+    <string name="latitude_example" translatable="false">35.7454</string>
+    <string name="longitude_example" translatable="false">51.3572</string>
+    <string name="zoom_example" translatable="false">13</string>
+</resources>

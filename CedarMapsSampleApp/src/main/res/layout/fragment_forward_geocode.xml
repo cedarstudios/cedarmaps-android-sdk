@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    xmlns:mapbox="http://schemas.android.com/apk/res-auto">
+
+    <com.cedarstudios.cedarmapssdk.MapView
+        android:id="@+id/mapView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        mapbox:mapbox_cameraZoom="14"
+        mapbox:mapbox_cameraTargetLat="35.7572"
+        mapbox:mapbox_cameraTargetLng="51.4099"
+        />
+
+    <LinearLayout
+        android:id="@+id/search_results_linear_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:background="@android:color/white"
+        android:visibility="gone"
+        >
+
+        <ProgressBar
+            android:id="@+id/search_progress_bar"
+            android:layout_width="match_parent"
+            android:layout_height="64dp"
+            android:layout_gravity="center"
+            android:padding="8dp"
+            android:visibility="gone"/>
+
+        <android.support.v7.widget.RecyclerView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scrollbars="vertical"
+            android:id="@+id/recyclerView"
+            android:visibility="gone"/>
+
+    </LinearLayout>
+
+</FrameLayout>

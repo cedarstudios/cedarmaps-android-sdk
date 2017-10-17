@@ -1,2 +1,2 @@
-include ':CedarMapsTestApp', ':CedarMapsSDK'
+include ':CedarMapsSDK', ':CedarMapsSampleApp'
 rootProject.name = 'artifact'

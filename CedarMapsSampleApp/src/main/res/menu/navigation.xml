@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/navigation_map"
+        android:icon="@drawable/ic_map_marker"
+        android:title="@string/title_map" />
+
+    <item
+        android:id="@+id/navigation_reverse"
+        android:icon="@drawable/ic_reverse_geocode"
+        android:title="@string/title_reverse" />
+
+    <item
+        android:id="@+id/navigation_forward"
+        android:icon="@drawable/ic_forward_geocode"
+        android:title="@string/title_forward" />
+
+    <item
+        android:id="@+id/navigation_direction"
+        android:icon="@drawable/ic_direction"
+        android:title="@string/title_direction" />
+
+    <item
+        android:id="@+id/navigation_static"
+        android:icon="@drawable/ic_static_map"
+        android:title="@string/title_static" />
+
+</menu>

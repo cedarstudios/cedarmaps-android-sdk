@@ -16,7 +16,7 @@ repositories {
 }
 
 dependencies {
-    compile('com.cedarmaps:CedarMapsSDK:1.0.0@aar') {
+    compile('com.cedarmaps:CedarMapsSDK:1.0.1@aar') {
         transitive = true
     }
 }

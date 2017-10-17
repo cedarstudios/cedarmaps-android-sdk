@@ -1,0 +1,88 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:mapbox="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    tools:context="com.cedarmaps.sdksampleapp.fragments.DirectionFragment">
+
+    <com.cedarstudios.cedarmapssdk.MapView
+        android:id="@+id/mapView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        mapbox:mapbox_cameraZoom="14"
+        mapbox:mapbox_cameraTargetLat="35.7572"
+        mapbox:mapbox_cameraTargetLng="51.4099"
+        />
+
+    <LinearLayout
+        android:id="@+id/direction_hint_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="0"
+        android:orientation="vertical"
+        android:padding="12dp">
+
+        <TextView
+            android:id="@+id/direction_hint_text_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minLines="0"
+            android:textSize="16sp"
+            android:textColor="@android:color/black"
+            android:textAlignment="center"
+            android:text="@string/direction_hint"/>
+        <ProgressBar
+            android:id="@+id/direction_progress_bar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:visibility="gone"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/direction_result_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="0"
+        android:orientation="vertical"
+        android:padding="12dp"
+        android:visibility="gone">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            >
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/distance"
+                android:textSize="16sp"
+                android:textColor="@android:color/black"
+                />
+            <TextView
+                android:id="@+id/direction_distance_text_view"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingLeft="4dp"
+                android:paddingStart="4dp"
+                android:paddingRight="4dp"
+                android:paddingEnd="4dp"
+                android:textSize="18sp"
+                />
+
+        </LinearLayout>
+        <Button
+            android:id="@+id/direction_reset_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="18sp"
+            android:text="@string/reset_points"/>
+
+    </LinearLayout>
+
+</LinearLayout>

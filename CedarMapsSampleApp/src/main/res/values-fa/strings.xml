@@ -1,0 +1,31 @@
+<resources>
+    <string name="app_name">سیدارمپ - دمو</string>
+    <string name="title_map">نقشه</string>
+    <string name="title_reverse">نقطه‌یابی</string>
+    <string name="title_forward">جستجو</string>
+    <string name="title_direction">مسیریابی</string>
+    <string name="title_static">استاتیک</string>
+
+    <string name="no_results">متأسفانه نتیجه‌ای یافت نشد</string>
+    <string name="unknown_error">خطایی پیش آمد</string>
+    <string name="parse_error">خطای پردازش نتیجه</string>
+    <string name="searching">در حال جستجو …</string>
+
+    <string name="search_for">جستجو …</string>
+    <string name="latitude">عرض جغرافیایی: </string>
+    <string name="longitude">طول جغرافیایی: </string>
+    <string name="zoom">زوم: </string>
+    <string name="zoom_level_hint">۶ تا ۱۷</string>
+    <string name="create_static_map">ساخت نقشه استاتیک</string>
+    <string name="static_maps_hint">دکمه را لمس کنید تا تصویر نقشه مربوط به محدوده‌ی تعیین شده تولید شود</string>
+    <string name="center_point">نقطه مرکزی</string>
+    <string name="map_download_failed">خطا در دانلود نقشه</string>
+    <string name="fill_all_fields">لطفاً تمام موارد را پر کنید</string>
+    <string name="distance">فاصله:</string>
+    <string name="reset_points">انتخاب دوباره</string>
+    <string name="direction_hint">نقشه را برای انتخاب نقاط ابتدایی و نهایی لمس کنید</string>
+    <string name="direction_receiving_failed">خطا در دریافت اطلاعات مسیریابی</string>
+    <string name="search_in_places">در بین معابر جستجو کنید</string>
+    <string name="province">استان</string>
+    <string name="comma">،</string>
+</resources>

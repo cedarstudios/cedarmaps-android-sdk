@@ -1,27 +1,38 @@
 apply plugin: 'com.android.library'
+apply plugin: 'signing'
 apply plugin: 'com.github.dcendents.android-maven'
 
 group = "com.cedarmaps"
-version = "1.0.0"
+version = "2.0.0"
 def siteUrl = 'http://cedarmaps.com'
 def gitUrl = 'http://cedarmaps.com/git'
 
 android {
-    compileSdkVersion 23
-    buildToolsVersion "23.0.3"
+    compileSdkVersion 26
+    buildToolsVersion '26.0.2'
 
     defaultConfig {
-        minSdkVersion 9
-        targetSdkVersion 23
+        minSdkVersion 15 //IceCream Sandwich 4.0.3
+        targetSdkVersion 26 //Oreo
     }
 }
 
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
-    compile 'org.osmdroid:osmdroid-android:5.2@aar'
-    compile 'com.squareup.okhttp3:okhttp:3.4.1'
-    compile 'com.squareup.okhttp3:okhttp-urlconnection:3.4.1'
+    compile 'com.squareup.okhttp3:okhttp:3.9.0'
+    compile 'com.squareup.okhttp3:okhttp-urlconnection:3.9.0'
+    compile 'com.google.code.gson:gson:2.8.0'
+    compile ('com.cedarmaps:mapbox-android-sdk:5.1.4@aar') {
+        transitive = true
+    }
 }
+
+// From https://raw.github.com/mcxiaoke/gradle-mvn-push/master/gradle-mvn-push.gradle
+def isReleaseBuild() {
+    return VERSION_NAME.contains("SNAPSHOT") == false
+}
+
+apply from: 'gradle-javadoc.gradle'
 
 install {
     repositories.mavenInstaller {
@@ -45,7 +56,7 @@ install {
                     developer {
                         id 'cedarstudios'
                         name 'CedarStudios'
-                        email 'info@cedarstudios.com'
+                        email 'info@cedarmaps.com'
                     }
                 }
                 scm {
@@ -58,3 +69,30 @@ install {
         }
     }
 }
+
+signing {
+    required { isReleaseBuild() }
+    sign configurations.archives
+}
+
+task androidJavadocs(type: Javadoc) {
+    source = android.sourceSets.main.java.sourceFiles
+    classpath = files(android.bootClasspath)
+    failOnError false
+}
+
+task androidJavadocsJar(type: Jar, dependsOn: androidJavadocs) {
+    classifier = 'javadoc'
+    from androidJavadocs.destinationDir
+}
+
+task androidSourcesJar(type: Jar) {
+    classifier = 'sources'
+    from android.sourceSets.main.java.sourceFiles
+}
+
+artifacts {
+    archives androidSourcesJar
+    archives androidJavadocsJar
+}
+

@@ -1,0 +1,20 @@
+android.libraryVariants.all { variant ->
+    def name = variant.name
+    // noinspection GroovyAssignabilityCheck
+    task "javadoc$name"(type: Javadoc) {
+        description = "Generates javadoc for build $name"
+        failOnError = false
+        destinationDir = new File(destinationDir, variant.baseName)
+        source = files(variant.javaCompile.source)
+        classpath = files(variant.javaCompile.classpath.files) + files(android.bootClasspath)
+        options.windowTitle("CedarMaps Android SDK $VERSION_NAME Reference")
+        options.docTitle("CedarMaps Android SDK $VERSION_NAME")
+        options.header("CedarMaps Android SDK $VERSION_NAME Reference")
+        options.bottom("&copy; 2017&ndash;2017 Cedar Studios. All rights reserved.")
+        options.links("http://docs.oracle.com/javase/7/docs/api/")
+        options.linksOffline("http://d.android.com/reference/", "$System.env.ANDROID_HOME/docs/reference")
+        options.overview("src/main/java/overview.html")
+        options.group("CedarMaps Android SDK", "com.cedarmaps.*")
+        exclude '**/R.java', '**/BuildConfig.java'
+    }
+}
