@@ -14,7 +14,6 @@ import android.text.TextUtils;
 
 import com.cedarstudios.cedarmapssdk.listeners.AccessTokenListener;
 import com.mapbox.mapboxsdk.Mapbox;
-import com.mapbox.mapboxsdk.http.HTTPRequest;
 
 import org.json.JSONObject;
 
@@ -29,6 +28,8 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
+
+import static com.mapbox.mapboxsdk.constants.MapboxConstants.INTENT_FILTER_TILE_HTTP_CODE_401;
 
 final class AuthenticationManager {
 
@@ -125,7 +126,7 @@ final class AuthenticationManager {
         mContext = context.getApplicationContext();
         LocalBroadcastManager.getInstance(mContext)
                 .registerReceiver(instance.mapViewError401BroadcastReceiver,
-                        new IntentFilter(HTTPRequest.MAP_TILE_401_INTENT));
+                        new IntentFilter(INTENT_FILTER_TILE_HTTP_CODE_401));
     }
 
     Context getContext() {

@@ -2,6 +2,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@android:color/white"
     tools:context="com.cedarmaps.sdksampleapp.fragments.StaticMapFragment">
 
     <LinearLayout
@@ -81,7 +82,8 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/latitude_example"
-                        android:inputType="numberDecimal" />
+                        android:inputType="numberDecimal"
+                        tools:ignore="LabelFor" />
 
                 </LinearLayout>
 
@@ -102,7 +104,7 @@
                         android:layout_height="wrap_content"
                         android:text="@string/longitude_example"
                         android:inputType="numberDecimal"
-                        />
+                        tools:ignore="LabelFor" />
 
                 </LinearLayout>
 

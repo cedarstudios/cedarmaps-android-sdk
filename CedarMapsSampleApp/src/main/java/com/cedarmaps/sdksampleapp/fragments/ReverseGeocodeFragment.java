@@ -7,6 +7,8 @@ import android.support.v4.app.Fragment;
 import android.support.v7.widget.AppCompatTextView;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
@@ -31,39 +33,32 @@ public class ReverseGeocodeFragment extends Fragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        setHasOptionsMenu(true);
         return inflater.inflate(R.layout.fragment_reverse_geocode, container, false);
     }
 
     @Override
-    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        mTextView = (AppCompatTextView) view.findViewById(R.id.reverse_geocode_textView);
-        mMapView = (MapView) view.findViewById(R.id.mapView);
-        mProgressBar = (ProgressBar) view.findViewById(R.id.reverse_geocode_progressBar);
-        mMapView = (MapView) view.findViewById(R.id.mapView);
+        mTextView = view.findViewById(R.id.reverse_geocode_textView);
+        mMapView = view.findViewById(R.id.mapView);
+        mProgressBar = view.findViewById(R.id.reverse_geocode_progressBar);
+        mMapView = view.findViewById(R.id.mapView);
 
         mMapView.onCreate(savedInstanceState);
 
-        mMapView.getMapAsync(new OnMapReadyCallback() {
-            @Override
-            public void onMapReady(MapboxMap mapboxMap) {
-                mMapboxMap = mapboxMap;
+        mMapView.getMapAsync(mapboxMap -> {
+            mMapboxMap = mapboxMap;
 
-                mMapboxMap.setMaxZoomPreference(17);
-                mMapboxMap.setMinZoomPreference(6);
+            mMapboxMap.setMaxZoomPreference(17);
+            mMapboxMap.setMinZoomPreference(6);
 
-                reverseGeocode(mapboxMap.getCameraPosition());
+            reverseGeocode(mapboxMap.getCameraPosition());
 
-                mMapboxMap.setOnCameraIdleListener(new MapboxMap.OnCameraIdleListener() {
-                    @Override
-                    public void onCameraIdle() {
-                        reverseGeocode(mMapboxMap.getCameraPosition());
-                    }
-                });
-            }
+            mMapboxMap.addOnCameraIdleListener(() -> reverseGeocode(mMapboxMap.getCameraPosition()));
         });
     }
 
@@ -140,7 +135,7 @@ public class ReverseGeocodeFragment extends Fragment {
     }
 
     @Override
-    public void onSaveInstanceState(Bundle outState) {
+    public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
         mMapView.onSaveInstanceState(outState);
     }
@@ -189,4 +184,9 @@ public class ReverseGeocodeFragment extends Fragment {
         mMapView = null;
     }
 
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+        menu.clear();
+    }
 }

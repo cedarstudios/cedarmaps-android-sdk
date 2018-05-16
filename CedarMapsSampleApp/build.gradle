@@ -1,31 +1,93 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 26
-    buildToolsVersion "26.0.2"
+    compileSdkVersion 27
 
     defaultConfig {
         applicationId "com.cedarmaps.sdksampleapp"
         minSdkVersion 15
-        targetSdkVersion 26
-        versionCode 96072501
-        versionName "1.0"
+        targetSdkVersion 27
+        versionCode 97022520
+        versionName "1.1.1"
 
         vectorDrawables.useSupportLibrary = true
     }
     buildTypes {
+        debug {
+            applicationIdSuffix ".debug"
+        }
         release {
-            minifyEnabled false
+            minifyEnabled true
+            shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    lintOptions {
+        abortOnError false
+    }
+
+    splits {
+        abi {
+            enable true
+            reset()
+            include "armeabi-v7a", "arm64-v8a", "x86", "x86_64"
+            universalApk true
+        }
+    }
+
+    flavorDimensions "dimension"
+
+    productFlavors {
+        def STRING = "String"
+        def MARKET = "MARKET"
+
+        def GOOGLE_PLAY = '"GooglePlay"'
+        def CAFE_BAZAAR = '"CafeBazaar"'
+
+        googlePlay {
+            buildConfigField STRING, MARKET, GOOGLE_PLAY
+            dimension "dimension"
+            ndk {
+                abiFilters "armeabi-v7a", "arm64-v8a", "x86", "x86_64"
+            }
+        }
+
+        cafeBazaar {
+            buildConfigField STRING, MARKET, CAFE_BAZAAR
+            dimension "dimension"
+            ndk {
+                abiFilters "armeabi-v7a", "arm64-v8a"
+            }
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}
+
+ext.abiCodes = ['armeabi-v7a':1, 'arm64-v8a':2, 'x86':3, 'x86_64':4]
+import com.android.build.OutputFile
+android.applicationVariants.all { variant ->
+    variant.outputs.each { output ->
+        def baseAbiVersionCode =
+                project.ext.abiCodes.get(output.getFilter(com.android.build.OutputFile.ABI))
+        if (baseAbiVersionCode != null) {
+            output.versionCodeOverride = variant.versionCode + baseAbiVersionCode
         }
     }
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
-    compile(project(':CedarMapsSDK'))
-    compile 'com.android.support:appcompat-v7:26.1.0'
-    compile 'com.android.support:design:26.1.0'
-    compile 'com.android.support:support-vector-drawable:26.1.0'
-    compile 'com.android.support:support-v4:26.1.0'
+    implementation (project(':CedarMapsSDK'))
+    implementation("com.mapbox.mapboxsdk:mapbox-android-plugin-locationlayer:0.5.0") {
+        exclude group: 'com.mapbox.mapboxsdk'
+    }
+
+    implementation 'com.android.support:appcompat-v7:27.1.1'
+    implementation 'com.android.support:design:27.1.1'
+    implementation 'com.android.support:support-vector-drawable:27.1.1'
+    implementation 'com.android.support:support-v4:27.1.1'
 }

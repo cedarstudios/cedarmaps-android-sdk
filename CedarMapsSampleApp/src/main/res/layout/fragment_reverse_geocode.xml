@@ -2,26 +2,28 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@android:color/white"
     tools:context="com.cedarmaps.sdksampleapp.fragments.ReverseGeocodeFragment"
     xmlns:mapbox="http://schemas.android.com/apk/res-auto"
     >
 
     <com.cedarstudios.cedarmapssdk.MapView
         android:id="@+id/mapView"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         mapbox:mapbox_cameraZoom="14"
         mapbox:mapbox_cameraTargetLat="35.7572"
         mapbox:mapbox_cameraTargetLng="51.4099"
         />
 
-    <android.support.v7.widget.AppCompatImageView
+    <ImageView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        mapbox:srcCompat="@drawable/cedarmaps_marker_icon_default"/>
+        mapbox:srcCompat="@drawable/cedarmaps_marker_icon_default"
+        tools:ignore="ContentDescription" />
 
-    <LinearLayout
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@drawable/background_border"
@@ -40,10 +42,11 @@
             android:id="@+id/reverse_geocode_progressBar"
             android:layout_width="48dp"
             android:layout_height="48dp"
+            android:layout_gravity="center"
             android:visibility="visible"
             />
 
-        <android.support.v7.widget.AppCompatTextView
+        <TextView
             android:id="@+id/reverse_geocode_textView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -53,6 +56,6 @@
             android:visibility="gone"
             />
 
-    </LinearLayout>
+    </FrameLayout>
 
 </FrameLayout>

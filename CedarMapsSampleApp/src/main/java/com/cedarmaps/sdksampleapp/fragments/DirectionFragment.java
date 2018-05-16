@@ -7,6 +7,8 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -23,13 +25,12 @@ import com.cedarstudios.cedarmapssdk.model.routing.GeoRouting;
 import com.cedarstudios.cedarmapssdk.model.routing.Route;
 import com.mapbox.mapboxsdk.annotations.IconFactory;
 import com.mapbox.mapboxsdk.annotations.Marker;
-import com.mapbox.mapboxsdk.annotations.MarkerViewOptions;
+import com.mapbox.mapboxsdk.annotations.MarkerOptions;
 import com.mapbox.mapboxsdk.annotations.PolylineOptions;
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory;
 import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.mapboxsdk.geometry.LatLngBounds;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
-import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
 
 import java.util.ArrayList;
 
@@ -51,58 +52,50 @@ public class DirectionFragment extends Fragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        setHasOptionsMenu(true);
         return inflater.inflate(R.layout.fragment_direction, container, false);
     }
 
     @Override
-    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        mMapView = (MapView) view.findViewById(R.id.mapView);
-        resetButton = (Button) view.findViewById(R.id.direction_reset_button);
-        hintLayout = (LinearLayout) view.findViewById(R.id.direction_hint_layout);
-        resultLayout = (LinearLayout) view.findViewById(R.id.direction_result_layout);
-        progressBar = (ProgressBar) view.findViewById(R.id.direction_progress_bar);
-        hintTextView = (TextView) view.findViewById(R.id.direction_hint_text_view);
-        distanceTextView = (TextView) view.findViewById(R.id.direction_distance_text_view);
+        mMapView = view.findViewById(R.id.mapView);
+        resetButton = view.findViewById(R.id.direction_reset_button);
+        hintLayout = view.findViewById(R.id.direction_hint_layout);
+        resultLayout = view.findViewById(R.id.direction_result_layout);
+        progressBar = view.findViewById(R.id.direction_progress_bar);
+        hintTextView = view.findViewById(R.id.direction_hint_text_view);
+        distanceTextView = view.findViewById(R.id.direction_distance_text_view);
 
-        resetButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mMapboxMap.clear();
-                markers.clear();
+        resetButton.setOnClickListener(v -> {
+            mMapboxMap.clear();
+            markers.clear();
 
-                resultLayout.setVisibility(View.GONE);
-                progressBar.setVisibility(View.GONE);
-                hintTextView.setVisibility(View.VISIBLE);
-                hintLayout.setVisibility(View.VISIBLE);
-            }
+            resultLayout.setVisibility(View.GONE);
+            progressBar.setVisibility(View.GONE);
+            hintTextView.setVisibility(View.VISIBLE);
+            hintLayout.setVisibility(View.VISIBLE);
         });
 
         mMapView.onCreate(savedInstanceState);
 
-        mMapView.getMapAsync(new OnMapReadyCallback() {
-            @Override
-            public void onMapReady(MapboxMap mapboxMap) {
-                mMapboxMap = mapboxMap;
+        mMapView.getMapAsync(mapboxMap -> {
+            mMapboxMap = mapboxMap;
 
-                mMapboxMap.setMaxZoomPreference(17);
-                mMapboxMap.setMinZoomPreference(6);
+            mMapboxMap.setMaxZoomPreference(17);
+            mMapboxMap.setMinZoomPreference(6);
 
-                mMapboxMap.setOnMapClickListener(new MapboxMap.OnMapClickListener() {
-                    @Override
-                    public void onMapClick(@NonNull LatLng latLng) {
-                        if (markers.size() == 0) {
-                            addMarkerToMapViewAtPosition(latLng, R.drawable.cedarmaps_marker_icon_start);
-                        } else if (markers.size() == 1) {
-                            addMarkerToMapViewAtPosition(latLng, R.drawable.cedarmaps_marker_icon_end);
-                            computeDirection(markers.get(0).getPosition(), markers.get(1).getPosition());
-                        }
-                    }
-                });
-            }
+            mMapboxMap.addOnMapClickListener(latLng -> {
+                if (markers.size() == 0) {
+                    addMarkerToMapViewAtPosition(latLng, R.drawable.cedarmaps_marker_icon_start);
+                } else if (markers.size() == 1) {
+                    addMarkerToMapViewAtPosition(latLng, R.drawable.cedarmaps_marker_icon_end);
+                    computeDirection(markers.get(0).getPosition(), markers.get(1).getPosition());
+                }
+            });
         });
 
     }
@@ -152,7 +145,7 @@ public class DirectionFragment extends Fragment {
     }
 
     private void drawCoordinatesInBound(ArrayList<LatLng> coordinates, LatLngBounds bounds) {
-        if (mMapboxMap == null) {
+        if (mMapboxMap == null || getContext() == null) {
             return;
         }
         mMapboxMap.addPolyline(new PolylineOptions()
@@ -175,8 +168,8 @@ public class DirectionFragment extends Fragment {
     }
 
     private void addMarkerToMapViewAtPosition(LatLng coordinate, int markerImageID) {
-        if (mMapboxMap != null) {
-            Marker marker = mMapboxMap.addMarker(new MarkerViewOptions()
+        if (mMapboxMap != null && getContext() != null) {
+            Marker marker = mMapboxMap.addMarker(new MarkerOptions()
                     .position(coordinate)
                     .icon(IconFactory.getInstance(getContext()).fromResource(markerImageID))
             );
@@ -185,7 +178,7 @@ public class DirectionFragment extends Fragment {
     }
 
     @Override
-    public void onSaveInstanceState(Bundle outState) {
+    public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
         mMapView.onSaveInstanceState(outState);
     }
@@ -232,5 +225,11 @@ public class DirectionFragment extends Fragment {
         super.onDetach();
 
         mMapView = null;
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+        menu.clear();
     }
 }

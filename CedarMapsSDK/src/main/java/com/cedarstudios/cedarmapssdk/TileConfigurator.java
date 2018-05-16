@@ -12,7 +12,7 @@ import com.mapbox.mapboxsdk.Mapbox;
 
 final class TileConfigurator {
 
-    static void prepare(@Nullable final OnTilesConfigured completionHandler) {
+    static CedarMaps prepare(@Nullable final OnTilesConfigured completionHandler) {
         final Context context = AuthenticationManager.getInstance().getContext();
 
         Handler handler = new Handler(Looper.getMainLooper());
@@ -43,5 +43,6 @@ final class TileConfigurator {
                 }
             });
         }
+        return CedarMaps.getInstance();
     }
 }

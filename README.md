@@ -1,12 +1,29 @@
-## Getting Started with the CedarMaps Android SDK
+# CedarMaps Android SDK
 
-This guide will take you through the process of adding a map to your Android app.
+This guide will take you through the process of integrating CedarMaps into your Android application.
 
-### Installation
+All the mentioned methods and tools in this document are tested on Android Studio v3.1.
 
-To install the current stable version add this to your build.gradle:
+## Table of Contents
+- [Installation](#installation)
+	-	[Required Permissions](#required-permissions)
+	-	[Configuring CedarMaps](#configuring-cedarmaps)
+		- [Changing API Base URL](#changing-api-base-url)
+    -   [Mapbox](#mapbox)
+    	- [MapView](#mapview)
+        - [Plugins](#plugins)
+    -   [APK Size](#apk-size)
+- [API Methods](#api-methods)
+	-	[Forward Geocoding](#forward-geocoding)
+	-	[Reverse Geocoding](#reverse-geocoding)
+	-	[Direction](#direction)
+	-	[Distance](#distance)
+	-	[Static Map Image](#static-map-images)
+- [Sample App](#more-examples-via-the-sample-app)
 
-To install the current **stable** version add this to your `build.gradle`:
+## Installation
+
+To install the current stable version, first add the address of CedarMaps maven repository to the list of repositories. This is usually located in the `build.gradle` of your **project** module.
 
 ```groovy
 repositories {
@@ -14,40 +31,29 @@ repositories {
         url "http://repo.cedarmaps.com/android/"
     }
 }
+```
 
+Then, add this to the `build.gradle` of your **app** module:
+
+```groovy
 dependencies {
-    compile('com.cedarmaps:CedarMapsSDK:2.0.0@aar') {
-        transitive = true
-    }
+    implementation 'com.cedarmaps:CedarMapsSDK:3.0.0'
 }
 ```
 
-
 ### Required Permissions
 
-Ensure the following *core* permissions are requested in your `AndroidManifest.xml` file:
+If your App needs to access location services, add the following to `AndroidManifest.xml`:
 
 ```xml
-<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-<uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
-<uses-permission android:name="android.permission.INTERNET" />
-<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-```
-
-If your App needs to access location services, it'll also need the following permissions too:
-
-```xml
-<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 ```
 
-**Android 6.0+ devices require you have to check for "dangerous" permissions at runtime.**
-CedarMaps requires the following dangerous permissions:
-`WRITE_EXTERNAL_STORAGE`, `ACCESS_COARSE_LOCATION` and `ACCESS_FINE_LOCATION`.  
+On Android 6.0 and up, you have to check for "dangerous" permissions at runtime. Accessing location is considered a dangerous permission.
 
 ### Configuring CedarMaps
 
-In order to use CedarMaps API, you should set your clientID, clientSecret and a context in your application.
+In order to use CedarMaps API, you should set your `clientID`, `clientSecret` and a `context` in your application.
 
 ```java
 CedarMaps.getInstance()
@@ -56,15 +62,31 @@ CedarMaps.getInstance()
     .setContext(CONTEXT)
 ```
 
+#### Changing API Base URL
 
-### The MapView
+If you've received an API Base URL, you can set it on CedarMaps shared object:
 
-The `MapView` class is the key component of this library. It behaves
+```java
+CedarMaps.getInstance()
+    .setAPIBaseURL("YOUR_API_BASE_URL")
+```
+
+### Mapbox
+
+CedarMaps SDK is based on [Mapbox GL Android SDK v6.0.1](https://github.com/mapbox/mapbox-gl-native) and provides extra API methods over Mapbox. 
+For more information about how to use MapView and other components such as **Adding Markers**, **Showing Current Location**, etc., please see [Mapbox Getting Started](https://www.mapbox.com/help/first-steps-android-sdk/).
+
+#### MapView
+
+The `MapView` class is the key component of this library for showing map tiles. It behaves
 like any other `ViewGroup` and its behavior can be changed statically with an
 [XML layout](http://developer.android.com/guide/topics/ui/declaring-layout.html)
 file, or programmatically during runtime.
 
-If you want to use MapView, first call this before using any `MapView`.
+Pay attention to the package when importing. **CedarMaps** `MapView` extends **Mapbox** `MapView` and they shall not be used interchangeably.
+
+If you want to show map tiles, first call the following snippet before using any `MapView` instance or inflating any layouts using this object.
+
 ```java
 CedarMaps.getInstance().prepareTiles(new OnTilesConfigured() {
             @Override
@@ -79,7 +101,7 @@ CedarMaps.getInstance().prepareTiles(new OnTilesConfigured() {
         });
 ```
 
-#### XML layout
+##### XML layout
 To add the CedarMaps `MapView` as a layout element, add the following to your xml file:
 
 ```xml
@@ -92,8 +114,7 @@ To add the CedarMaps `MapView` as a layout element, add the following to your xm
         />
 ```
 
-
-And then you can call it programmatically with
+And then you can call methods on it programmatically;
 
 ```java
 mMapView = (MapView) view.findViewById(R.id.mapView);
@@ -116,25 +137,40 @@ mMapView.getMapAsync(new OnMapReadyCallback() {
 });
 ```
 
-#### Changing API Base Url
+#### Plugins
 
-You can change API Base Url by setting it on CedarMaps shared object:
+Mapbox uses [Plugins](https://github.com/mapbox/mapbox-plugins-android) to add extra functionality to the base SDK.
 
-```java
-CedarMaps.getInstance()
-    .setAPIBaseURL("YOUR_API_BASE_URL")
+Each plugin is added as a new dependency in `build.gradle`.
+
+```groovy
+dependencies {
+  implementation ('com.mapbox.mapboxsdk:PLUGIN_NAME:PLUGIN_VERSION_NUMBER') {
+    exclude group: 'com.mapbox.mapboxsdk'
+  }
+}
 ```
-CedarMaps SDK is based on [Mapbox GL Android SDK v5.1.4](https://github.com/mapbox/mapbox-gl-native) and provides `CedarMaps` and extra API over Mapbox. 
-For more information about how to use MapView and other components please see [Mapbox Getting Started](https://www.mapbox.com/help/first-steps-android-sdk/)
 
+**Note:** Since CedarMaps uses a forked version of Mapbox SDK, make sure to exclude `group: 'com.mapbox.mapboxsdk'` when adding a new plugin.
 
-=======
-### CedarMaps API
-In addition to use MapView, you can use CedarMaps API to retrieve location based data and street search.
+### APK Size
 
-#### Geocode (Place Search)
+Mapbox is built as a native library for every possible architecture. If you are supporting all architectures, please consider splitting the APK based on architecture.
 
-For finding a street you can easily call ```forwardGeocode``` methods.
+An introduction from Google can be found [here](https://developer.android.com/studio/build/configure-apk-splits).
+
+You can find APK splitting configurations in Sample App `build.gradle` as well.
+
+## API Methods
+In addition to using MapView, you can use CedarMaps API to retrieve location based data and street search.
+
+All API calls are asynchronous; they don't block the UiThread. The completion handlers are all called on the UiThread.
+
+You can also consult [CedarMaps.java](http://gitlab.cedar.ir/cedar.studios/cedarmaps-sdk-android-public/blob/master/CedarMapsSDK/src/main/java/com/cedarstudios/cedarmapssdk/CedarMaps.java) for detailed info on all of our methods. Some of the main methods are mentioned below.
+
+### Forward Geocoding
+
+For finding a street or some limited POIs, you can easily call ```forwardGeocode``` methods.
 
 ```java
 CedarMaps.getInstance().forwardGeocode(query, new ForwardGeocodeResultsListener() {
@@ -151,18 +187,18 @@ CedarMaps.getInstance().forwardGeocode(query, new ForwardGeocodeResultsListener(
 });
 ```
 
-More advanced street searches are available in sample app;
+More advanced street searches are available in the sample app.
 
-#### Reverse Geocode
+### Reverse Geocoding
 
-You can retrieve data about a location by using Reverse Geocode API
+You can retrieve data about a location by using Reverse Geocode API.
 
 ```java
 CedarMaps.getInstance().reverseGeocode(
         coordinate,
         new ReverseGeocodeResultListener() {
             @Override
-            public void onSuccess(@NonNull ReverseGeocode result) {
+            public void onSuccess(@NonNull ReverseGeocode result {
 
             }
 
@@ -173,9 +209,9 @@ CedarMaps.getInstance().reverseGeocode(
         });
 ```
 
-#### Direction
+### Direction
      
-This method calculates the distance between points in meters. It can be called with up to 15 different points in a single request.
+This method calculates the direction between points. It can be called with up to 50 different pairs in a single request.
 
 ```java
 CedarMaps.getInstance().direction(departure, destination,
@@ -192,10 +228,54 @@ CedarMaps.getInstance().direction(departure, destination,
         });
 ```
 
-### More Examples Via Sample App
+### Distance
 
-The CedarMaps Android SDK is actually an [Android Library Module](https://developer.android.com/tools/projects/index.html#LibraryModules),
+This method calculates the distance between points in meters. It can be called with up to 15 different points in a single request.
+
+```java
+CedarMaps.getInstance().distance(departure, destination,
+        new GeoRoutingResultListener() {
+            @Override
+            public void onSuccess(@NonNull GeoRouting result) {
+
+            }
+
+            @Override
+            public void onFailure(@NonNull String error) {
+
+            }
+        });
+```
+
+### Static Map Images
+
+This method returns a static map image of desired size for the entered coordinate.
+
+It automatically considers the screen density of the device on which it's being called for better image quality.
+
+You can optionally specify marker positions to draw on the image.
+
+```java
+CedarMaps.getInstance().staticMap(dimension, zoomLevel, centerPoint, markers, 
+	new StaticMapImageResultListener() {
+		@Override
+		public void onSuccess(@NonNull Bitmap bitmap) {
+
+		}
+
+		@Override
+		public void onFailure(@NonNull String errorMessage) {
+
+		}
+	});
+```
+
+## More Examples via the Sample App
+
+The CedarMaps Android SDK is an [Android Library Module](https://developer.android.com/tools/projects/index.html#LibraryModules),
 which means in order to test it out in an emulator or a device during development a [Test Module](https://developer.android.com/tools/projects/index.html#testing) is needed.  We call this test module
 the **SampleApp**.  It contains many different examples of new functionality or just ways to do certain things.  We highly recommend checking it out.
 
 The source code for these tests / examples is located under the CedarMapsSampleApp directory.
+
+**CedarMaps-Dev** (the SampleApp) can also be downloaded from [Google Play](https://play.google.com/store/apps/details?id=com.cedarmaps.sdksampleapp&hl=en) and [Cafe Bazaar](https://cafebazaar.ir/app/com.cedarmaps.sdksampleapp/?l=en).

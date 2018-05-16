@@ -2,6 +2,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@android:color/white"
     xmlns:mapbox="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     tools:context="com.cedarmaps.sdksampleapp.fragments.DirectionFragment">
@@ -20,6 +21,7 @@
         android:id="@+id/direction_hint_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="@android:color/white"
         android:layout_weight="0"
         android:orientation="vertical"
         android:padding="12dp">

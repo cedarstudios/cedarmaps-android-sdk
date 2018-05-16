@@ -89,9 +89,9 @@ public class CedarMaps {
      * @param clientID The client ID you received for using CedarMaps SDK.
      * @return AuthenticationManager singleton object; You could use this to continue setting the other parameters such as clientSecret and context.
      */
-    public AuthenticationManager setClientID(@NonNull String clientID) {
+    public CedarMaps setClientID(@NonNull String clientID) {
         AuthenticationManager.getInstance().setClientID(clientID);
-        return AuthenticationManager.getInstance();
+        return CedarMaps.getInstance();
     }
 
     /**
@@ -100,9 +100,9 @@ public class CedarMaps {
      * @param clientSecret The client secret you received for using CedarMaps SDK.
      * @return AuthenticationManager singleton object; You could use this to continue setting the other parameters such as context.
      */
-    public AuthenticationManager setClientSecret(@NonNull String clientSecret) {
+    public CedarMaps setClientSecret(@NonNull String clientSecret) {
         AuthenticationManager.getInstance().setClientSecret(clientSecret);
-        return AuthenticationManager.getInstance();
+        return CedarMaps.getInstance();
     }
 
     /**
@@ -113,9 +113,9 @@ public class CedarMaps {
      *                This needs to be set only once in the lifetime of your application.
      * @return AuthenticationManager singleton object.
      */
-    public AuthenticationManager setContext(@NonNull Context context) {
+    public CedarMaps setContext(@NonNull Context context) {
         AuthenticationManager.getInstance().setContext(context);
-        return AuthenticationManager.getInstance();
+        return CedarMaps.getInstance();
     }
 
     /**
@@ -125,9 +125,9 @@ public class CedarMaps {
      * @param url If you pass null, the SDK uses the default baseURL.
      * @return AuthenticationManager singleton object.
      */
-    public AuthenticationManager setAPIBaseURL(@Nullable String url) {
+    public CedarMaps setAPIBaseURL(@Nullable String url) {
         AuthenticationManager.getInstance().setAPIBaseURL(url);
-        return AuthenticationManager.getInstance();
+        return CedarMaps.getInstance();
     }
     //endregion
 

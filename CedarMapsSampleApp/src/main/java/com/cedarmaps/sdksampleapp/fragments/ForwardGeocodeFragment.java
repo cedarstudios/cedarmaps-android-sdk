@@ -27,10 +27,9 @@ import com.cedarstudios.cedarmapssdk.MapView;
 import com.cedarstudios.cedarmapssdk.listeners.ForwardGeocodeResultsListener;
 import com.cedarstudios.cedarmapssdk.model.geocoder.forward.ForwardGeocode;
 import com.mapbox.mapboxsdk.annotations.Marker;
-import com.mapbox.mapboxsdk.annotations.MarkerViewOptions;
+import com.mapbox.mapboxsdk.annotations.MarkerOptions;
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
-import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
 
 import java.util.List;
 
@@ -75,30 +74,27 @@ public class ForwardGeocodeFragment extends Fragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, final ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, final ViewGroup container, Bundle savedInstanceState) {
         setHasOptionsMenu(true);
         return inflater.inflate(R.layout.fragment_forward_geocode, container, false);
     }
 
     @Override
-    public void onViewCreated(final View view, @Nullable Bundle savedInstanceState) {
+    public void onViewCreated(@NonNull final View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        mMapView = (MapView) view.findViewById(R.id.mapView);
+        mMapView = view.findViewById(R.id.mapView);
         mMapView.onCreate(savedInstanceState);
-        mMapView.getMapAsync(new OnMapReadyCallback() {
-            @Override
-            public void onMapReady(MapboxMap mapboxMap) {
-                mMapboxMap = mapboxMap;
+        mMapView.getMapAsync(mapboxMap -> {
+            mMapboxMap = mapboxMap;
 
-                mMapboxMap.setMaxZoomPreference(17);
-                mMapboxMap.setMinZoomPreference(6);
-            }
+            mMapboxMap.setMaxZoomPreference(17);
+            mMapboxMap.setMinZoomPreference(6);
         });
 
-        mRecyclerView = (RecyclerView) view.findViewById(R.id.recyclerView);
-        mLinearLayout = (LinearLayout) view.findViewById(R.id.search_results_linear_layout);
-        mProgressBar = (ProgressBar) view.findViewById(R.id.search_progress_bar);
+        mRecyclerView = view.findViewById(R.id.recyclerView);
+        mLinearLayout = view.findViewById(R.id.search_results_linear_layout);
+        mProgressBar = view.findViewById(R.id.search_progress_bar);
 
         mLinearLayoutManager = new LinearLayoutManager(getActivity());
         mRecyclerView.setLayoutManager(mLinearLayoutManager);
@@ -108,15 +104,12 @@ public class ForwardGeocodeFragment extends Fragment {
 
         view.setFocusableInTouchMode(true);
         view.requestFocus();
-        view.setOnKeyListener(new View.OnKeyListener() {
-            @Override
-            public boolean onKey(View v, int keyCode, KeyEvent event) {
-                if (keyCode == KeyEvent.KEYCODE_BACK && event.getAction() == KeyEvent.ACTION_UP && state == State.MAP_PIN) {
-                    setState(State.RESULTS);
-                    return true;
-                }
-                return false;
+        view.setOnKeyListener((v, keyCode, event) -> {
+            if (keyCode == KeyEvent.KEYCODE_BACK && event.getAction() == KeyEvent.ACTION_UP && state == State.MAP_PIN) {
+                setState(State.RESULTS);
+                return true;
             }
+            return false;
         });
 
     }
@@ -131,22 +124,22 @@ public class ForwardGeocodeFragment extends Fragment {
     @Override
     public void onPrepareOptionsMenu(Menu menu) {
 
+        if (menu == null || menu.findItem(R.id.action_search) == null) {
+            return;
+        }
         final SearchView searchView = (SearchView) menu.findItem(R.id.action_search).getActionView();
         searchView.setIconifiedByDefault(false);
         searchView.setQueryHint(getString(R.string.search_in_places));
         searchView.setMaxWidth(Integer.MAX_VALUE);
         mSearchView = searchView;
 
-        searchView.setOnQueryTextFocusChangeListener(new View.OnFocusChangeListener() {
-            @Override
-            public void onFocusChange(View v, boolean hasFocus) {
-                if (hasFocus && state == State.MAP_PIN) {
-                    mMapboxMap.clear();
-                    if (!TextUtils.isEmpty(searchView.getQuery())) {
-                        setState(State.RESULTS);
-                    } else {
-                        setState(State.MAP);
-                    }
+        searchView.setOnQueryTextFocusChangeListener((v, hasFocus) -> {
+            if (hasFocus && state == State.MAP_PIN) {
+                mMapboxMap.clear();
+                if (!TextUtils.isEmpty(searchView.getQuery())) {
+                    setState(State.RESULTS);
+                } else {
+                    setState(State.MAP);
                 }
             }
         });
@@ -207,19 +200,20 @@ public class ForwardGeocodeFragment extends Fragment {
 
         mSearchView.clearFocus();
 
-        final Marker marker = mMapboxMap.addMarker(new MarkerViewOptions()
+        final Marker marker = mMapboxMap.addMarker(new MarkerOptions()
                 .position(item.getLocation().getCenter())
                 .title(item.getName())
                 .snippet(item.getAddress())
         );
         mMapboxMap.selectMarker(marker);
 
-        mMapboxMap.easeCamera(CameraUpdateFactory.newLatLng(item.getLocation().getCenter()), 1000);
-
+        if (item.getLocation().getCenter() != null) {
+            mMapboxMap.easeCamera(CameraUpdateFactory.newLatLng(item.getLocation().getCenter()), 1000);
+        }
     }
 
     @Override
-    public void onSaveInstanceState(Bundle outState) {
+    public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
         mMapView.onSaveInstanceState(outState);
     }

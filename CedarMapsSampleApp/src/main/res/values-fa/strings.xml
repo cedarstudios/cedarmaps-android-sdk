@@ -28,4 +28,5 @@
     <string name="search_in_places">در بین معابر جستجو کنید</string>
     <string name="province">استان</string>
     <string name="comma">،</string>
+    <string name="location_is_needed_to_function">نرم‌افزار برای عملکرد این ویژگی به موقعیت مکانی نیاز دارد</string>
 </resources>
