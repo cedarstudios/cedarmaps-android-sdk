@@ -61,11 +61,6 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        CedarMaps.getInstance()
-                .setClientID(Constants.CLIENT_ID)
-                .setClientSecret(Constants.CLIENT_SECRET)
-                .setContext(this);
-
         CedarMaps.getInstance().prepareTiles(new OnTilesConfigured() {
             @Override
             public void onSuccess() {

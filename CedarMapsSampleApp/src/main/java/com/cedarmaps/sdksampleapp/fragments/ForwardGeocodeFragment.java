@@ -84,6 +84,7 @@ public class ForwardGeocodeFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         mMapView = view.findViewById(R.id.mapView);
+        mMapView.setStyleUrl("https://api.cedarmaps.com/v1/tiles/light.json");
         mMapView.onCreate(savedInstanceState);
         mMapView.getMapAsync(mapboxMap -> {
             mMapboxMap = mapboxMap;

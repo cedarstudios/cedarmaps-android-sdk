@@ -68,11 +68,15 @@ final class AuthenticationManager {
     }
 
     void setClientID(@NonNull String clientID) {
-        mClientID = clientID;
+        if (!clientID.equals(mClientID)) {
+            mClientID = clientID;
+        }
     }
 
     void setClientSecret(@NonNull String clientSecret) {
-        mClientSecret = clientSecret;
+        if (!clientSecret.equals(mClientSecret)) {
+            mClientSecret = clientSecret;
+        }
     }
 
     void getAccessToken(final @Nullable AccessTokenListener completionHandler) {
@@ -123,10 +127,12 @@ final class AuthenticationManager {
     }
 
     void setContext(@NonNull Context context) {
-        mContext = context.getApplicationContext();
-        LocalBroadcastManager.getInstance(mContext)
-                .registerReceiver(instance.mapViewError401BroadcastReceiver,
-                        new IntentFilter(INTENT_FILTER_TILE_HTTP_CODE_401));
+        if (mContext == null) {
+            mContext = context.getApplicationContext();
+            LocalBroadcastManager.getInstance(mContext)
+                    .registerReceiver(instance.mapViewError401BroadcastReceiver,
+                            new IntentFilter(INTENT_FILTER_TILE_HTTP_CODE_401));
+        }
     }
 
     Context getContext() {
@@ -184,7 +190,7 @@ final class AuthenticationManager {
     }
 
     @Nullable
-    private String getSavedAccessToken() throws CedarMapsException {
+    String getSavedAccessToken() throws CedarMapsException {
         if (mContext == null) {
             throw new CedarMapsException("Context is not set. Please call 'setContext' method on CedarMaps.getInstance()");
         }

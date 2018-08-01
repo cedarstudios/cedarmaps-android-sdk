@@ -2,7 +2,7 @@
 
 This guide will take you through the process of integrating CedarMaps into your Android application.
 
-All the mentioned methods and tools in this document are tested on Android Studio v3.1.
+All the mentioned methods and tools in this document are tested on Android Studio v3.1.3.
 
 ## Table of Contents
 - [Installation](#installation)
@@ -28,7 +28,7 @@ To install the current stable version, first add the address of CedarMaps maven 
 ```groovy
 repositories {
     maven {
-        url "http://repo.cedarmaps.com/android/"
+        url "https://repo.cedarmaps.com/android/"
     }
 }
 ```
@@ -37,13 +37,18 @@ Then, add this to the `build.gradle` of your **app** module:
 
 ```groovy
 dependencies {
-    implementation 'com.cedarmaps:CedarMapsSDK:3.0.0'
+    implementation 'com.cedarmaps:CedarMapsSDK:3.1.0'
 }
 ```
 
 ### Required Permissions
 
-If your App needs to access location services, add the following to `AndroidManifest.xml`:
+Make sure your app can access internet by adding this to `AndroidManifest.xml`:
+```xml
+<uses-permission android:name="android.permission.INTERNET"/>
+```
+
+If your App needs to access location services, add the following as well:
 
 ```xml
 <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
@@ -73,7 +78,7 @@ CedarMaps.getInstance()
 
 ### Mapbox
 
-CedarMaps SDK is based on [Mapbox GL Android SDK v6.0.1](https://github.com/mapbox/mapbox-gl-native) and provides extra API methods over Mapbox. 
+CedarMaps SDK is based on [Mapbox GL Android SDK v6.3.0](https://github.com/mapbox/mapbox-gl-native) and provides extra API methods over Mapbox. 
 For more information about how to use MapView and other components such as **Adding Markers**, **Showing Current Location**, etc., please see [Mapbox Getting Started](https://www.mapbox.com/help/first-steps-android-sdk/).
 
 #### MapView
@@ -136,6 +141,19 @@ mMapView.getMapAsync(new OnMapReadyCallback() {
     }
 });
 ```
+
+##### Changing Map Style
+
+You can set various style URLs to instances of `MapView`:
+
+```java
+mMapView.setStyleUrl("STYLE_URL");
+
+// Light Vector (Default): "https://api.cedarmaps.com/v1/styles/cedarmaps.light.json"
+// Dark Vector: "https://api.cedarmaps.com/v1/styles/cedarmaps.dark.json"
+// Raster: "https://api.cedarmaps.com/v1/tiles/light.json"
+```
+Make sure to use your base URL if you have one.
 
 #### Plugins
 

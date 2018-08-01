@@ -28,7 +28,9 @@ public class Route implements Serializable
     @SerializedName("time")
     @Expose
     private Integer time;
-
+    @SerializedName("instructions")
+    @Expose
+    private List<Instruction> instructions = null;
     /**
      *
      * @return Boundary for a route.
@@ -71,5 +73,15 @@ public class Route implements Serializable
     @Nullable
     public Integer getTime() {
         return time;
+    }
+
+
+    /**
+     *
+     * @return Turn by turn instructions for a route
+     */
+    @Nullable
+    public List<Instruction> getInstructions() {
+        return instructions;
     }
 }

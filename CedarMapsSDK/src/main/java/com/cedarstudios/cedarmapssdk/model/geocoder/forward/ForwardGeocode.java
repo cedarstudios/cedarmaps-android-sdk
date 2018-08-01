@@ -46,17 +46,21 @@ public class ForwardGeocode implements Serializable
     @Expose
     private String name;
 
-    @SerializedName("alternate_name")
-    @Expose
-    private String alternateName;
-
-    @SerializedName("full_name")
-    @Expose
-    private String fullName;
-
     @SerializedName("name_en")
     @Expose
     private String nameEn;
+
+    @SerializedName("alt_name")
+    @Expose
+    private String alternateName;
+
+    @SerializedName("alt_name_en")
+    @Expose
+    private String alternateNameEn;
+
+    @SerializedName("category")
+    @Expose
+    private String category = null;
 
     @SerializedName("type")
     @Expose
@@ -84,7 +88,11 @@ public class ForwardGeocode implements Serializable
 
     @SerializedName("components")
     @Expose
-    private Component components;
+    private Component components = null;
+
+    @SerializedName("slug")
+    @Expose
+    private String slug = null;
 
     /**
      *
@@ -106,7 +114,7 @@ public class ForwardGeocode implements Serializable
 
     /**
      *
-     * @return Alternate name of the result. e.g. Niayesh, Hashemi Rafsanjani
+     * @return Alternate name of the result. e.g. نیایش, هاشمی رفسنجانی
      */
     @Nullable
     public String getAlternateName() {
@@ -115,11 +123,11 @@ public class ForwardGeocode implements Serializable
 
     /**
      *
-     * @return Full name of the result. e.g. Hakim, Ayatollah Hakim
+     * @return English alternate name of the result. e.g. Niayesh, Hashemi Rafsanjani
      */
     @Nullable
-    public String getFullName() {
-        return fullName;
+    public String getEnglishlternateName() {
+        return alternateNameEn;
     }
 
     /**
@@ -129,6 +137,15 @@ public class ForwardGeocode implements Serializable
     @Nullable
     public String getEnglishName() {
         return nameEn;
+    }
+
+    /**
+     *
+     * @return Category name of the result if type="poi".
+     */
+    @Nullable
+    public String getCategory() {
+        return category;
     }
 
     /**
@@ -163,8 +180,17 @@ public class ForwardGeocode implements Serializable
      *
      * @return Detailed address components for the result.
      */
-    @NonNull
+    @Nullable
     public Component getComponents() {
         return components;
+    }
+
+    /**
+     *
+     * @return Kikojas slug of the result if type="poi".
+     */
+    @Nullable
+    public String getSlug() {
+        return slug;
     }
 }

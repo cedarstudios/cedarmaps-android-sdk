@@ -3,7 +3,7 @@ apply plugin: 'signing'
 apply plugin: 'com.github.dcendents.android-maven'
 
 group = "com.cedarmaps"
-version = "3.0.0"
+version = "3.1.0"
 def siteUrl = 'http://cedarmaps.com'
 def gitUrl = 'http://cedarmaps.com/git'
 
@@ -17,9 +17,9 @@ android {
 }
 
 dependencies {
-    api 'com.cedarmaps:mapbox-android-sdk:6.0.1'
-    implementation 'com.squareup.okhttp3:okhttp:3.10.0'
-    implementation 'com.google.code.gson:gson:2.8.2'
+    api 'com.cedarmaps:mapbox-android-sdk:6.3.0'
+    implementation 'com.squareup.okhttp3:okhttp:3.11.0'
+    implementation 'com.google.code.gson:gson:2.8.5'
 }
 
 // From https://raw.github.com/mcxiaoke/gradle-mvn-push/master/gradle-mvn-push.gradle

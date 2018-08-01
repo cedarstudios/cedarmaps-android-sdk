@@ -7,15 +7,12 @@ android {
         applicationId "com.cedarmaps.sdksampleapp"
         minSdkVersion 15
         targetSdkVersion 27
-        versionCode 97022520
-        versionName "1.1.1"
+        versionCode 97050910
+        versionName "1.2.0"
 
         vectorDrawables.useSupportLibrary = true
     }
     buildTypes {
-        debug {
-            applicationIdSuffix ".debug"
-        }
         release {
             minifyEnabled true
             shrinkResources true
@@ -27,11 +24,16 @@ android {
         abortOnError false
     }
 
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
     splits {
         abi {
             enable true
             reset()
-            include "armeabi-v7a", "arm64-v8a", "x86", "x86_64"
+//            include "armeabi-v7a", "arm64-v8a", "x86", "x86_64"
             universalApk true
         }
     }
@@ -49,7 +51,7 @@ android {
             buildConfigField STRING, MARKET, GOOGLE_PLAY
             dimension "dimension"
             ndk {
-                abiFilters "armeabi-v7a", "arm64-v8a", "x86", "x86_64"
+                abiFilters "armeabi-v7a","arm64-v8a","x86","x86_64"
             }
         }
 
@@ -57,19 +59,13 @@ android {
             buildConfigField STRING, MARKET, CAFE_BAZAAR
             dimension "dimension"
             ndk {
-                abiFilters "armeabi-v7a", "arm64-v8a"
+                abiFilters "armeabi-v7a","arm64-v8a"
             }
         }
-    }
-
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
     }
 }
 
 ext.abiCodes = ['armeabi-v7a':1, 'arm64-v8a':2, 'x86':3, 'x86_64':4]
-import com.android.build.OutputFile
 android.applicationVariants.all { variant ->
     variant.outputs.each { output ->
         def baseAbiVersionCode =
@@ -82,7 +78,7 @@ android.applicationVariants.all { variant ->
 
 dependencies {
     implementation (project(':CedarMapsSDK'))
-    implementation("com.mapbox.mapboxsdk:mapbox-android-plugin-locationlayer:0.5.0") {
+    implementation("com.mapbox.mapboxsdk:mapbox-android-plugin-locationlayer:0.7.1") {
         exclude group: 'com.mapbox.mapboxsdk'
     }
 

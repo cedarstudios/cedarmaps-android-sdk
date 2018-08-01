@@ -50,6 +50,8 @@ public class ReverseGeocodeFragment extends Fragment {
 
         mMapView.onCreate(savedInstanceState);
 
+        mMapView.setStyleUrl("https://api.cedarmaps.com/v1/styles/cedarmaps.dark.json");
+
         mMapView.getMapAsync(mapboxMap -> {
             mMapboxMap = mapboxMap;
 

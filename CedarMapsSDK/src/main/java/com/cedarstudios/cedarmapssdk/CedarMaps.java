@@ -79,7 +79,12 @@ public class CedarMaps {
     String getMapID() {
         return mMapID;
     }
-    void setMapID(String mapID) {
+
+    /**
+     * This method specifies the result types when using Geocoding APIs. Possible values are "cedarmaps.streets" and "cedarmaps.mix"
+     * @param mapID The map ID
+     */
+    public void setMapID(String mapID) {
         this.mMapID = mapID;
     }
 
@@ -131,6 +136,9 @@ public class CedarMaps {
     }
     //endregion
 
+    public String getSavedAccessToken() throws CedarMapsException {
+        return AuthenticationManager.getInstance().getSavedAccessToken();
+    }
 
     /**
      * Forward Geocoding. You can use this method to obtain address info about the entered query.
@@ -260,13 +268,23 @@ public class CedarMaps {
 
         getResponseBodyFromURL(url, new NetworkResponseBodyCompletionHandler() {
             @Override
-            public void onSuccess(ResponseBody responseBody) {
-                ForwardGeocodeResponse forwardGeocodeResponse = ForwardGeocodeResponse.parseJSON(responseBody.charStream());
-                if (forwardGeocodeResponse.results == null) {
-                    completionHandler.onFailure(forwardGeocodeResponse.status);
-                } else {
-                    completionHandler.onSuccess(forwardGeocodeResponse.results);
-                }
+            public void onSuccess(final ResponseBody responseBody) {
+                runOnBackgroundThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        final ForwardGeocodeResponse forwardGeocodeResponse = ForwardGeocodeResponse.parseJSON(responseBody.charStream());
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                if (forwardGeocodeResponse.results == null) {
+                                    completionHandler.onFailure(forwardGeocodeResponse.status);
+                                } else {
+                                    completionHandler.onSuccess(forwardGeocodeResponse.results);
+                                }
+                            }
+                        });
+                    }
+                });
             }
 
             @Override
@@ -292,13 +310,23 @@ public class CedarMaps {
 
         getResponseBodyFromURL(url, new NetworkResponseBodyCompletionHandler() {
             @Override
-            public void onSuccess(ResponseBody responseBody) {
-                ReverseGeocodeResponse reverseGeocodeResponse = ReverseGeocodeResponse.parseJSON(responseBody.charStream());
-                if (reverseGeocodeResponse.result == null) {
-                    completionHandler.onFailure(reverseGeocodeResponse.status);
-                } else {
-                    completionHandler.onSuccess(reverseGeocodeResponse.result);
-                }
+            public void onSuccess(final ResponseBody responseBody) {
+                runOnBackgroundThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        final ReverseGeocodeResponse reverseGeocodeResponse = ReverseGeocodeResponse.parseJSON(responseBody.charStream());
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                if (reverseGeocodeResponse.result == null) {
+                                    completionHandler.onFailure(reverseGeocodeResponse.status);
+                                } else {
+                                    completionHandler.onSuccess(reverseGeocodeResponse.result);
+                                }
+                            }
+                        });
+                    }
+                });
             }
 
             @Override
@@ -325,13 +353,23 @@ public class CedarMaps {
 
         getResponseBodyFromURL(url, new NetworkResponseBodyCompletionHandler() {
             @Override
-            public void onSuccess(ResponseBody responseBody) {
-                GeoRoutingResponse geoRoutingResponse = GeoRoutingResponse.parseJSON(responseBody.charStream());
-                if (geoRoutingResponse.result == null) {
-                    completionHandler.onFailure(geoRoutingResponse.status);
-                } else {
-                    completionHandler.onSuccess(geoRoutingResponse.result);
-                }
+            public void onSuccess(final ResponseBody responseBody) {
+                runOnBackgroundThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        final GeoRoutingResponse geoRoutingResponse = GeoRoutingResponse.parseJSON(responseBody.charStream());
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                if (geoRoutingResponse.result == null) {
+                                    completionHandler.onFailure(geoRoutingResponse.status);
+                                } else {
+                                    completionHandler.onSuccess(geoRoutingResponse.result);
+                                }
+                            }
+                        });
+                    }
+                });
             }
 
             @Override
@@ -365,13 +403,23 @@ public class CedarMaps {
 
         getResponseBodyFromURL(url, new NetworkResponseBodyCompletionHandler() {
             @Override
-            public void onSuccess(ResponseBody responseBody) {
-                GeoRoutingResponse geoRoutingResponse = GeoRoutingResponse.parseJSON(responseBody.charStream());
-                if (geoRoutingResponse.result == null) {
-                    completionHandler.onFailure(geoRoutingResponse.status);
-                } else {
-                    completionHandler.onSuccess(geoRoutingResponse.result);
-                }
+            public void onSuccess(final ResponseBody responseBody) {
+                runOnBackgroundThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        final GeoRoutingResponse geoRoutingResponse = GeoRoutingResponse.parseJSON(responseBody.charStream());
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                if (geoRoutingResponse.result == null) {
+                                    completionHandler.onFailure(geoRoutingResponse.status);
+                                } else {
+                                    completionHandler.onSuccess(geoRoutingResponse.result);
+                                }
+                            }
+                        });
+                    }
+                });
             }
 
             @Override
@@ -391,27 +439,27 @@ public class CedarMaps {
      */
     public void direction(LatLng start, LatLng end, final GeoRoutingResultListener completionHandler) {
 
-        String url = String.format(Locale.ENGLISH,
-                AuthenticationManager.getInstance().getAPIBaseURL() + "direction/%1$s/%2$s,%3$s;%4$s,%5$s",
-                mDirectionID,
-                start.getLatitude(), start.getLongitude(), end.getLatitude(), end.getLongitude());
+        ArrayList<Pair<LatLng, LatLng>> points = new ArrayList<>();
+        points.add(new Pair<>(start, end));
 
-        getResponseBodyFromURL(url, new NetworkResponseBodyCompletionHandler() {
-            @Override
-            public void onSuccess(ResponseBody responseBody) {
-                GeoRoutingResponse geoRoutingResponse = GeoRoutingResponse.parseJSON(responseBody.charStream());
-                if (geoRoutingResponse.result == null) {
-                    completionHandler.onFailure(geoRoutingResponse.status);
-                } else {
-                    completionHandler.onSuccess(geoRoutingResponse.result);
-                }
-            }
+        direction(points, false, new Locale("fa"), completionHandler);
+    }
 
-            @Override
-            public void onFailure(String errorMessage) {
-                completionHandler.onFailure(errorMessage);
-            }
-        });
+    /**
+     * This method calculates the detailed coordinates of the route between two points with textual instructions.
+     *
+     * @param start Starting coordinate
+     * @param end Ending coordinate
+     * @param locale Identifier for language. Currently Locale("fa") and Locale("en") are supported.
+     * @param completionHandler The handler to notify when Geo Routing results are ready with success or error.
+     *                          The handler methods are called on UIThread.
+     */
+    public void directionWithInstructions(LatLng start, LatLng end, Locale locale, final GeoRoutingResultListener completionHandler) {
+
+        ArrayList<Pair<LatLng, LatLng>> points = new ArrayList<>();
+        points.add(new Pair<>(start, end));
+
+        direction(points, true, locale, completionHandler);
     }
 
     /**
@@ -421,29 +469,60 @@ public class CedarMaps {
      * @param completionHandler The handler to notify when Geo Routing results are ready with success or error.
      *                          The handler methods are called on UIThread.
      */
-    public void direction(Pair<LatLng, LatLng>[] coordinatePairs, final GeoRoutingResultListener completionHandler) {
+    public void direction(ArrayList<Pair<LatLng, LatLng>> coordinatePairs, final GeoRoutingResultListener completionHandler) {
+        direction(coordinatePairs, false, new Locale("fa"), completionHandler);
+    }
 
-        String pairs = "";
+
+    /**
+     * This method calculates the detailed coordinates of the route between two consecutive points with textual instructions. It can be called with up to 50 pairs
+     *
+     * @param coordinatePairs Set up to 50 pairs of (Start, End).
+     * @param locale Identifier for language. Currently Locale("fa") and Locale("en") are supported.
+     * @param completionHandler The handler to notify when Geo Routing results are ready with success or error.
+     *                          The handler methods are called on UIThread.
+     */
+    public void directionWithInstructions(ArrayList<Pair<LatLng, LatLng>> coordinatePairs, Locale locale, final GeoRoutingResultListener completionHandler) {
+        direction(coordinatePairs, true, locale, completionHandler);
+    }
+
+    private void direction(ArrayList<Pair<LatLng, LatLng>> coordinatePairs, Boolean shouldShowInstructions, Locale locale, final GeoRoutingResultListener completionHandler) {
+
+        StringBuilder pairs = new StringBuilder();
         String delimiter = "";
         for (Pair<LatLng, LatLng> locationPair : coordinatePairs) {
-            pairs += delimiter + String.format(Locale.ENGLISH, "%1$s,%2$s;%3$s,%4$s", locationPair.first.getLatitude(),
-                    locationPair.first.getLongitude(), locationPair.second.getLatitude(), locationPair.second.getLatitude());
+            pairs.append(delimiter).append(String.format(Locale.ENGLISH, "%1$s,%2$s;%3$s,%4$s", locationPair.first.getLatitude(),
+                    locationPair.first.getLongitude(), locationPair.second.getLatitude(), locationPair.second.getLongitude()));
             delimiter = "/";
         }
 
         String url = String.format(Locale.ENGLISH,
-                AuthenticationManager.getInstance().getAPIBaseURL() + "direction/%1$s/%2$s",
-                mDirectionID, pairs);
+                AuthenticationManager.getInstance().getAPIBaseURL() + "direction/%1$s/%2$s?instructions=%3$s&locale=%4$s",
+                mDirectionID,
+                pairs.toString(),
+                shouldShowInstructions ? "true" : "false",
+                locale.getLanguage().contains("fa") ? "fa" : "en"
+        );
 
         getResponseBodyFromURL(url, new NetworkResponseBodyCompletionHandler() {
             @Override
-            public void onSuccess(ResponseBody responseBody) {
-                GeoRoutingResponse geoRoutingResponse = GeoRoutingResponse.parseJSON(responseBody.charStream());
-                if (geoRoutingResponse.result == null) {
-                    completionHandler.onFailure(geoRoutingResponse.status);
-                } else {
-                    completionHandler.onSuccess(geoRoutingResponse.result);
-                }
+            public void onSuccess(final ResponseBody responseBody) {
+                runOnBackgroundThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        final GeoRoutingResponse geoRoutingResponse = GeoRoutingResponse.parseJSON(responseBody.charStream());
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                if (geoRoutingResponse.result == null) {
+                                    completionHandler.onFailure(geoRoutingResponse.status);
+                                } else {
+                                    completionHandler.onSuccess(geoRoutingResponse.result);
+                                }
+                            }
+                        });
+                    }
+                });
             }
 
             @Override
@@ -451,8 +530,8 @@ public class CedarMaps {
                 completionHandler.onFailure(errorMessage);
             }
         });
-    }
 
+    }
 
     /**
      * This method creates a static image of map for the entered location.
@@ -494,13 +573,11 @@ public class CedarMaps {
         getResponseBodyFromURL(url, new NetworkResponseBodyCompletionHandler() {
             @Override
             public void onSuccess(final ResponseBody responseBody) {
-                final Handler mainHandler = new Handler(Looper.getMainLooper());
-
-                AsyncTask.execute(new Runnable() {
+                runOnBackgroundThread(new Runnable() {
                     @Override
                     public void run() {
                         final Bitmap bitmap = BitmapFactory.decodeStream(responseBody.byteStream());
-                        mainHandler.post(new Runnable() {
+                        runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
                                 if (bitmap == null) {
@@ -550,8 +627,6 @@ public class CedarMaps {
 
     private void getResponseBodyFromURL(final String url, final NetworkResponseBodyCompletionHandler completionHandler) {
 
-        final Handler handler = new Handler(Looper.getMainLooper());
-
         AuthenticationManager.getInstance().getAccessToken(new AccessTokenListener() {
             @Override
             public void onSuccess(@NonNull String accessToken) {
@@ -565,7 +640,7 @@ public class CedarMaps {
                 client.newCall(request).enqueue(new Callback() {
                     @Override
                     public void onResponse(Call call, final Response response) throws IOException {
-                        handler.post(new Runnable() {
+                        runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
                                 if (response.code() == 400) {
@@ -589,7 +664,7 @@ public class CedarMaps {
 
                     @Override
                     public void onFailure(final Call call, final IOException e) {
-                        handler.post(new Runnable() {
+                        runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
                                 completionHandler.onFailure(new CedarMapsException(call.toString(), e).getMessage());
@@ -601,7 +676,7 @@ public class CedarMaps {
 
             @Override
             public void onFailure(final @NonNull String error) {
-                handler.post(new Runnable() {
+                runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         completionHandler.onFailure(error);
@@ -609,5 +684,13 @@ public class CedarMaps {
                 });
             }
         });
+    }
+
+    private void runOnUiThread(Runnable task) {
+        new Handler(Looper.getMainLooper()).post(task);
+    }
+
+    private void runOnBackgroundThread(Runnable task) {
+        AsyncTask.execute(task);
     }
 }
