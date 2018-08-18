@@ -6,6 +6,7 @@ All the mentioned methods and tools in this document are tested on Android Studi
 
 ## Table of Contents
 - [Installation](#installation)
+    -   [Java 8](#java-8)
 	-	[Required Permissions](#required-permissions)
 	-	[Configuring CedarMaps](#configuring-cedarmaps)
 		- [Changing API Base URL](#changing-api-base-url)
@@ -38,6 +39,24 @@ Then, add this to the `build.gradle` of your **app** module:
 ```groovy
 dependencies {
     implementation 'com.cedarmaps:CedarMapsSDK:3.1.0'
+}
+```
+
+### Java 8
+
+You may receive an error forcing you to use a minimum API version of N. This section will help you with that.
+
+If you're using an Android Studio version that is 3.1.0 or above, you can ignore this section because the new dex compiler D8 will be enabled by default. If you are not using the new dex compiler D8, you should follow this section.
+
+The Mapbox Maps SDK for Android introduces the use of Java 8. To fix any Java versioning issues, ensure that you are using Gradle version of 3.0 or greater. Once you’ve done that, add the following compileOptions to the android section of your app-level build.gradle file like so:
+
+```groovy
+android {
+  ...
+  compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
 }
 ```
 
