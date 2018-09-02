@@ -389,17 +389,17 @@ public class CedarMaps {
      */
     public void distance(Pair<LatLng, LatLng>[] coordinatePairs, final GeoRoutingResultListener completionHandler) {
 
-        String pairs = "";
+        StringBuilder pairs = new StringBuilder();
         String delimiter = "";
         for (Pair<LatLng, LatLng> locationPair : coordinatePairs) {
-            pairs += delimiter + String.format(Locale.ENGLISH, "%1$s,%2$s;%3$s,%4$s", locationPair.first.getLatitude(),
-                    locationPair.first.getLongitude(), locationPair.second.getLatitude(), locationPair.second.getLatitude());
+            pairs.append(delimiter).append(String.format(Locale.ENGLISH, "%1$s,%2$s;%3$s,%4$s", locationPair.first.getLatitude(),
+                    locationPair.first.getLongitude(), locationPair.second.getLatitude(), locationPair.second.getLongitude()));
             delimiter = "/";
         }
 
         String url = String.format(Locale.ENGLISH,
                 AuthenticationManager.getInstance().getAPIBaseURL() + "distance/%1$s/%2$s",
-                mDirectionID, pairs);
+                mDirectionID, pairs.toString());
 
         getResponseBodyFromURL(url, new NetworkResponseBodyCompletionHandler() {
             @Override

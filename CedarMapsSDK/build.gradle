@@ -3,16 +3,16 @@ apply plugin: 'signing'
 apply plugin: 'com.github.dcendents.android-maven'
 
 group = "com.cedarmaps"
-version = "3.1.0"
+version = "3.1.1"
 def siteUrl = 'http://cedarmaps.com'
 def gitUrl = 'http://cedarmaps.com/git'
 
 android {
-    compileSdkVersion 27
+    compileSdkVersion 28
 
     defaultConfig {
         minSdkVersion 15 //IceCream Sandwich 4.0.3
-        targetSdkVersion 27 //Oreo
+        targetSdkVersion 28 //Pie
     }
 }
 
