@@ -2,7 +2,7 @@
 
 This guide will take you through the process of integrating CedarMaps into your Android application.
 
-All the mentioned methods and tools in this document are tested on Android Studio v3.2.0.
+All the mentioned methods and tools in this document are tested on Android Studio v3.2.1.
 
 ## Table of Contents
 - [Installation](#installation)
@@ -38,7 +38,7 @@ Then, add this to the `build.gradle` of your **app** module:
 
 ```groovy
 dependencies {
-    implementation 'com.cedarmaps:CedarMapsSDK:3.1.2'
+    implementation 'com.cedarmaps:CedarMapsSDK:3.2.0'
 }
 ```
 
@@ -97,7 +97,7 @@ CedarMaps.getInstance()
 
 ### Mapbox
 
-CedarMaps SDK is based on [Mapbox GL Android SDK v6.3.0](https://github.com/mapbox/mapbox-gl-native) and provides extra API methods over Mapbox. 
+CedarMaps SDK is based on [Mapbox GL Android SDK v6.8.0](https://github.com/mapbox/mapbox-gl-native) and provides extra API methods over Mapbox. 
 For more information about how to use MapView and other components such as **Adding Markers**, **Showing Current Location**, etc., please see [Mapbox Getting Started](https://www.mapbox.com/help/first-steps-android-sdk/).
 
 #### MapView
@@ -174,21 +174,6 @@ mMapView.setStyleUrl("STYLE_URL");
 ```
 Make sure to use your base URL if you have one.
 
-#### Plugins
-
-Mapbox uses [Plugins](https://github.com/mapbox/mapbox-plugins-android) to add extra functionality to the base SDK.
-
-Each plugin is added as a new dependency in `build.gradle`.
-
-```groovy
-dependencies {
-  implementation ('com.mapbox.mapboxsdk:PLUGIN_NAME:PLUGIN_VERSION_NUMBER') {
-    exclude group: 'com.mapbox.mapboxsdk'
-  }
-}
-```
-
-**Note:** Since CedarMaps uses a forked version of Mapbox SDK, make sure to exclude `group: 'com.mapbox.mapboxsdk'` when adding a new plugin.
 
 ### APK Size
 

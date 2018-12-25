@@ -34,6 +34,7 @@ import java.util.Locale;
 
 import okhttp3.Call;
 import okhttp3.Callback;
+import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
@@ -49,6 +50,7 @@ public class CedarMaps {
     private String mMapID;
     private String mDirectionID;
     private static CedarMaps instance;
+    private AuthenticationManager authManager = AuthenticationManager.getInstance();
     //endregion
 
     //region Initializers
@@ -95,7 +97,7 @@ public class CedarMaps {
      * @return AuthenticationManager singleton object; You could use this to continue setting the other parameters such as clientSecret and context.
      */
     public CedarMaps setClientID(@NonNull String clientID) {
-        AuthenticationManager.getInstance().setClientID(clientID);
+        authManager.setClientID(clientID);
         return CedarMaps.getInstance();
     }
 
@@ -106,7 +108,7 @@ public class CedarMaps {
      * @return AuthenticationManager singleton object; You could use this to continue setting the other parameters such as context.
      */
     public CedarMaps setClientSecret(@NonNull String clientSecret) {
-        AuthenticationManager.getInstance().setClientSecret(clientSecret);
+        authManager.setClientSecret(clientSecret);
         return CedarMaps.getInstance();
     }
 
@@ -119,7 +121,7 @@ public class CedarMaps {
      * @return AuthenticationManager singleton object.
      */
     public CedarMaps setContext(@NonNull Context context) {
-        AuthenticationManager.getInstance().setContext(context);
+        authManager.setContext(context);
         return CedarMaps.getInstance();
     }
 
@@ -131,13 +133,13 @@ public class CedarMaps {
      * @return AuthenticationManager singleton object.
      */
     public CedarMaps setAPIBaseURL(@Nullable String url) {
-        AuthenticationManager.getInstance().setAPIBaseURL(url);
+        authManager.setAPIBaseURL(url);
         return CedarMaps.getInstance();
     }
     //endregion
 
     public String getSavedAccessToken() throws CedarMapsException {
-        return AuthenticationManager.getInstance().getSavedAccessToken();
+        return authManager.getSavedAccessToken();
     }
 
     /**
@@ -247,7 +249,7 @@ public class CedarMaps {
             return;
         }
         String url = String.format(Locale.ENGLISH,
-                AuthenticationManager.getInstance().getAPIBaseURL() + "geocode/%s/%s.json",
+                authManager.getAPIBaseURL() + "geocode/%s/%s.json",
                 mMapID,
                 term);
 
@@ -304,7 +306,7 @@ public class CedarMaps {
      */
     public void reverseGeocode(LatLng coordinate, final ReverseGeocodeResultListener completionHandler) {
         String url = String.format(Locale.ENGLISH,
-                AuthenticationManager.getInstance().getAPIBaseURL() + "geocode/%1$s/%2$s,%3$s.json",
+                authManager.getAPIBaseURL() + "geocode/%1$s/%2$s,%3$s.json",
                 mMapID,
                 coordinate.getLatitude(), coordinate.getLongitude());
 
@@ -347,7 +349,7 @@ public class CedarMaps {
     public void distance(LatLng start, LatLng end, final GeoRoutingResultListener completionHandler) {
 
         String url = String.format(Locale.ENGLISH,
-                AuthenticationManager.getInstance().getAPIBaseURL() + "distance/%1$s/%2$s,%3$s;%4$s,%5$s",
+                authManager.getAPIBaseURL() + "distance/%1$s/%2$s,%3$s;%4$s,%5$s",
                 mDirectionID,
                 start.getLatitude(), start.getLongitude(), end.getLatitude(), end.getLongitude());
 
@@ -398,7 +400,7 @@ public class CedarMaps {
         }
 
         String url = String.format(Locale.ENGLISH,
-                AuthenticationManager.getInstance().getAPIBaseURL() + "distance/%1$s/%2$s",
+                authManager.getAPIBaseURL() + "distance/%1$s/%2$s",
                 mDirectionID, pairs.toString());
 
         getResponseBodyFromURL(url, new NetworkResponseBodyCompletionHandler() {
@@ -497,7 +499,7 @@ public class CedarMaps {
         }
 
         String url = String.format(Locale.ENGLISH,
-                AuthenticationManager.getInstance().getAPIBaseURL() + "direction/%1$s/%2$s?instructions=%3$s&locale=%4$s",
+                authManager.getAPIBaseURL() + "direction/%1$s/%2$s?instructions=%3$s&locale=%4$s",
                 mDirectionID,
                 pairs.toString(),
                 shouldShowInstructions ? "true" : "false",
@@ -568,7 +570,7 @@ public class CedarMaps {
         }
 
         String url = String.format(Locale.ENGLISH,
-                AuthenticationManager.getInstance().getAPIBaseURL() + "static/light/%s/%s%s%s", paramPosition, paramDimension, paramScale, paramMarkers);
+                authManager.getAPIBaseURL() + "static/light/%s/%s%s%s", paramPosition, paramDimension, paramScale, paramMarkers);
 
         getResponseBodyFromURL(url, new NetworkResponseBodyCompletionHandler() {
             @Override
@@ -627,10 +629,10 @@ public class CedarMaps {
 
     private void getResponseBodyFromURL(final String url, final NetworkResponseBodyCompletionHandler completionHandler) {
 
-        AuthenticationManager.getInstance().getAccessToken(new AccessTokenListener() {
+        authManager.getAccessToken(new AccessTokenListener() {
             @Override
             public void onSuccess(@NonNull String accessToken) {
-                CedarOkHttpClient client = CedarOkHttpClient.getInstance();
+                OkHttpClient client = CedarOkHttpClient.getSharedInstance(authManager.getContext());
                 Request request = new Request.Builder()
                         .url(url)
                         .tag(url)
@@ -646,7 +648,11 @@ public class CedarMaps {
                                 if (response.code() == 400) {
                                     completionHandler.onFailure(new CedarMapsException("Invalid Request. Missing Parameters.", response).getMessage());
                                 } else if (response.code() == 401) {
-                                    AuthenticationManager.getInstance().regenerateAccessToken();
+                                    try {
+                                        authManager.regenerateAccessToken();
+                                    } catch (CedarMapsException e) {
+                                        e.printStackTrace();
+                                    }
                                     completionHandler.onFailure(new CedarMapsException("Obtaining Bearer Token Failed.", response).getMessage());
                                 } else if (response.code() == 500) {
                                     completionHandler.onFailure(new CedarMapsException("Internal Server Error.", response).getMessage());

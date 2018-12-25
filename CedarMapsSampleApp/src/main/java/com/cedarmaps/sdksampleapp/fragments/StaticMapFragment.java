@@ -30,7 +30,6 @@ import java.util.ArrayList;
 
 public class StaticMapFragment extends Fragment {
 
-    private Button createMapButton;
     private ImageView mapImageView;
     private ProgressBar progressBar;
     private TextView howToTextView;
@@ -53,7 +52,7 @@ public class StaticMapFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        createMapButton = view.findViewById(R.id.static_map_create_button);
+        Button createMapButton = view.findViewById(R.id.static_map_create_button);
         mapImageView = view.findViewById(R.id.static_map_image_view);
         progressBar = view.findViewById(R.id.static_map_progress_bar);
         howToTextView = view.findViewById(R.id.static_map_hint);

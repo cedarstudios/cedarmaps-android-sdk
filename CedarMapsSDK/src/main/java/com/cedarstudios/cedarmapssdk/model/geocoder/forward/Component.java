@@ -4,7 +4,6 @@ package com.cedarstudios.cedarmapssdk.model.geocoder.forward;
 import android.support.annotation.Nullable;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.List;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;

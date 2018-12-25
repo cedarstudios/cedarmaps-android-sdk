@@ -10,11 +10,9 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.util.AttributeSet;
 
 import com.cedarstudios.cedarmapssdk.listeners.AccessTokenListener;
-import com.mapbox.mapboxsdk.Mapbox;
 import com.mapbox.mapboxsdk.maps.MapboxMapOptions;
 
 import java.util.Locale;
-import java.util.Map;
 
 public class MapView extends com.mapbox.mapboxsdk.maps.MapView {
 
@@ -58,7 +56,7 @@ public class MapView extends com.mapbox.mapboxsdk.maps.MapView {
                 }
             };
 
-            LocalBroadcastManager.getInstance(Mapbox.getApplicationContext())
+            LocalBroadcastManager.getInstance(getContext().getApplicationContext())
                     .registerReceiver(mBroadcastReceiver, new IntentFilter(AuthenticationManager.ACCESS_TOKEN_READY_INTENT));
         }
     }
@@ -107,7 +105,7 @@ public class MapView extends com.mapbox.mapboxsdk.maps.MapView {
 
     @Override
     public void onDestroy() {
-        LocalBroadcastManager.getInstance(Mapbox.getApplicationContext()).unregisterReceiver(mBroadcastReceiver);
+        LocalBroadcastManager.getInstance(getContext().getApplicationContext()).unregisterReceiver(mBroadcastReceiver);
         super.onDestroy();
     }
 }

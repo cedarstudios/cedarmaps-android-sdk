@@ -2,11 +2,13 @@ package com.cedarmaps.sdksampleapp;
 
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+
 import android.support.design.widget.BottomNavigationView;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
+import android.view.MenuItem;
+import android.widget.Toast;
 
 import com.cedarmaps.sdksampleapp.fragments.DirectionFragment;
 import com.cedarmaps.sdksampleapp.fragments.ForwardGeocodeFragment;
@@ -16,45 +18,9 @@ import com.cedarmaps.sdksampleapp.fragments.StaticMapFragment;
 import com.cedarstudios.cedarmapssdk.CedarMaps;
 import com.cedarstudios.cedarmapssdk.listeners.OnTilesConfigured;
 
-public class MainActivity extends AppCompatActivity {
+import java.util.Locale;
 
-    private Integer currentlySelectedMenuID = null;
-    private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
-            = item -> {
-                Fragment fragment = null;
-                switch (item.getItemId()) {
-                    case R.id.navigation_map:
-                        setTitle(R.string.title_map);
-                        fragment = new MapFragment();
-                        break;
-                    case R.id.navigation_reverse:
-                        setTitle(R.string.title_reverse);
-                        fragment = new ReverseGeocodeFragment();
-                        break;
-                    case R.id.navigation_forward:
-                        setTitle("");
-                        fragment = new ForwardGeocodeFragment();
-                        break;
-                    case R.id.navigation_direction:
-                        setTitle(R.string.title_direction);
-                        fragment = new DirectionFragment();
-                        break;
-                    case R.id.navigation_static:
-                        setTitle(R.string.title_static);
-                        fragment = new StaticMapFragment();
-                        break;
-                }
-
-                if (fragment != null && (currentlySelectedMenuID == null || currentlySelectedMenuID != item.getItemId())) {
-                    invalidateOptionsMenu();
-                    FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-                    currentlySelectedMenuID = item.getItemId();
-                    transaction.add(R.id.content, fragment).commit();
-                    return true;
-                }
-
-                return false;
-            };
+public class MainActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,16 +30,55 @@ public class MainActivity extends AppCompatActivity {
         CedarMaps.getInstance().prepareTiles(new OnTilesConfigured() {
             @Override
             public void onSuccess() {
-                BottomNavigationView navigation = findViewById(R.id.navigation);
-                navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
+                BottomNavigationView navigation = findViewById(R.id.navigationView);
+                navigation.setOnNavigationItemSelectedListener(MainActivity.this);
                 navigation.setSelectedItemId(R.id.navigation_map);
-                currentlySelectedMenuID = navigation.getSelectedItemId();
             }
 
             @Override
             public void onFailure(@NonNull String error) {
-                Log.e("MainActivity", error);
+                Toast.makeText(MainActivity.this, R.string.error_preparing_tiles, Toast.LENGTH_LONG).show();
             }
         });
+    }
+
+    @Override
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        Fragment fragment = null;
+        switch (item.getItemId()) {
+            case R.id.navigation_map:
+                setTitle(R.string.title_map);
+                fragment = new MapFragment();
+                break;
+            case R.id.navigation_reverse:
+                setTitle(R.string.title_reverse);
+                fragment = new ReverseGeocodeFragment();
+                break;
+            case R.id.navigation_forward:
+                setTitle("");
+                fragment = new ForwardGeocodeFragment();
+                break;
+            case R.id.navigation_direction:
+                setTitle(R.string.title_direction);
+                fragment = new DirectionFragment();
+                break;
+            case R.id.navigation_static:
+                setTitle(R.string.title_static);
+                fragment = new StaticMapFragment();
+                break;
+        }
+
+        if (fragment != null) {
+            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+            if (getSupportFragmentManager().getFragments().isEmpty()) {
+                transaction.add(R.id.content, fragment, String.format(Locale.US, "item: %d", item.getItemId())).commit();
+            } else {
+                transaction.replace(R.id.content, fragment, String.format(Locale.US, "item: %d", item.getItemId())).commit();
+                invalidateOptionsMenu();
+            }
+            return true;
+        }
+
+        return false;
     }
 }

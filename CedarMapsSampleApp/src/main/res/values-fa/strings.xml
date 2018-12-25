@@ -29,4 +29,5 @@
     <string name="province">استان</string>
     <string name="comma">،</string>
     <string name="location_is_needed_to_function">نرم‌افزار برای عملکرد این ویژگی به موقعیت مکانی نیاز دارد</string>
+    <string name="error_preparing_tiles">خطا در آماده‌سازی نقشه</string>
 </resources>

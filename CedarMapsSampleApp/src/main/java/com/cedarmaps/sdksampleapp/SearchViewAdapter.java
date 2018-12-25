@@ -1,6 +1,7 @@
 package com.cedarmaps.sdksampleapp;
 
 import android.support.annotation.NonNull;
+
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
@@ -30,10 +31,10 @@ public class SearchViewAdapter extends RecyclerView.Adapter<SearchViewAdapter.Se
         SearchViewHolder(View v) {
             super(v);
 
-            mNameTextView = (TextView) v.findViewById(R.id.search_view_list_item_name);
-            mTypeTextView = (TextView) v.findViewById(R.id.search_view_list_item_type);
-            mCityTextView = (TextView) v.findViewById(R.id.search_view_list_city);
-            mLocalityTextView = (TextView) v.findViewById(R.id.search_view_list_item_locality);
+            mNameTextView = v.findViewById(R.id.search_view_list_item_name);
+            mTypeTextView = v.findViewById(R.id.search_view_list_item_type);
+            mCityTextView = v.findViewById(R.id.search_view_list_city);
+            mLocalityTextView = v.findViewById(R.id.search_view_list_item_locality);
 
             v.setOnClickListener(this);
         }

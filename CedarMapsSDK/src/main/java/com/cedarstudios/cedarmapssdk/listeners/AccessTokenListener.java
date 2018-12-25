@@ -1,7 +1,6 @@
 package com.cedarstudios.cedarmapssdk.listeners;
 
 import android.support.annotation.NonNull;
-
 /**
  * The listener for obtaining the Access Token needed in using CedarMaps API.
  */

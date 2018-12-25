@@ -8,17 +8,14 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
-import android.support.v4.content.ContextCompat;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
-
 import com.cedarmaps.sdksampleapp.Constants;
 import com.cedarmaps.sdksampleapp.R;
-
 import com.cedarstudios.cedarmapssdk.MapView;
 import com.mapbox.android.core.location.LocationEngine;
 import com.mapbox.android.core.location.LocationEngineListener;
@@ -29,9 +26,8 @@ import com.mapbox.mapboxsdk.annotations.MarkerOptions;
 import com.mapbox.mapboxsdk.camera.CameraPosition;
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory;
 import com.mapbox.mapboxsdk.geometry.LatLng;
+import com.mapbox.mapboxsdk.location.modes.RenderMode;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
-import com.mapbox.mapboxsdk.plugins.locationlayer.LocationLayerPlugin;
-import com.mapbox.mapboxsdk.plugins.locationlayer.modes.RenderMode;
 
 import static android.support.v4.content.PermissionChecker.PERMISSION_GRANTED;
 
@@ -40,7 +36,6 @@ public class MapFragment extends Fragment implements LocationEngineListener {
     private MapView mMapView;
     private MapboxMap mMapboxMap;
     private LocationEngine mLocationEngine = null;
-    private LocationLayerPlugin mLocationLayerPlugin = null;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, final ViewGroup container, Bundle savedInstanceState) {
@@ -61,13 +56,15 @@ public class MapFragment extends Fragment implements LocationEngineListener {
 
             mMapboxMap.setMaxZoomPreference(17);
             mMapboxMap.setMinZoomPreference(6);
+            mMapboxMap.setCameraPosition(
+                    new CameraPosition.Builder()
+                            .target(Constants.VANAK_SQUARE)
+                            .zoom(15)
+                            .build());
 
-            if (hasLocationPermissions()) {
-                enableLocationPlugin();
+            if (PermissionsManager.areLocationPermissionsGranted(getActivity())) {
+                enableLocationComponent();
             }
-
-            //Move map to a certain position
-            animateToCoordinate(Constants.VANAK_SQUARE, 15);
 
             //Add marker to map
             addMarkerToMapViewAtPosition(Constants.VANAK_SQUARE);
@@ -106,39 +103,37 @@ public class MapFragment extends Fragment implements LocationEngineListener {
     private void setupCurrentLocationButton() {
         FloatingActionButton fb = getView().findViewById(R.id.showCurrentLocationButton);
         fb.setOnClickListener(v -> {
-            if (!hasLocationPermissions()) {
-                enableLocationPlugin();
-                return;
-            }
+            enableLocationComponent();
 
             toggleCurrentLocationButton();
         });
     }
 
+    @SuppressLint("MissingPermission")
     private void toggleCurrentLocationButton() {
-        if (mLocationLayerPlugin == null) {
+        if (!mMapboxMap.getLocationComponent().isLocationComponentEnabled()) {
             return;
         }
-        Location location = mLocationLayerPlugin.getLastKnownLocation();
+        Location location = mMapboxMap.getLocationComponent().getLastKnownLocation();
         if (location != null) {
             animateToCoordinate(new LatLng(location.getLatitude(),location.getLongitude()), 16);
         }
 
-        switch (mLocationLayerPlugin.getRenderMode()) {
+        switch (mMapboxMap.getLocationComponent().getRenderMode()) {
             case RenderMode.NORMAL:
-                mLocationLayerPlugin.setRenderMode(RenderMode.COMPASS);
+                mMapboxMap.getLocationComponent().setRenderMode(RenderMode.COMPASS);
                 break;
             case RenderMode.GPS:
-                mLocationLayerPlugin.setRenderMode(RenderMode.NORMAL);
+                mMapboxMap.getLocationComponent().setRenderMode(RenderMode.NORMAL);
                 break;
             case RenderMode.COMPASS:
-                mLocationLayerPlugin.setRenderMode(RenderMode.NORMAL);
+                mMapboxMap.getLocationComponent().setRenderMode(RenderMode.NORMAL);
                 break;
         }
     }
 
     @SuppressWarnings( {"MissingPermission"})
-    private void enableLocationPlugin() {
+    private void enableLocationComponent() {
         if (getActivity() == null) {
             return;
         }
@@ -147,8 +142,8 @@ public class MapFragment extends Fragment implements LocationEngineListener {
             // Create a location engine instance
             initializeLocationEngine();
 
-            mLocationLayerPlugin = new LocationLayerPlugin(mMapView, mMapboxMap, mLocationEngine);
-            mLocationLayerPlugin.setLocationLayerEnabled(true);
+            mMapboxMap.getLocationComponent().activateLocationComponent(getActivity());
+            mMapboxMap.getLocationComponent().setLocationComponentEnabled(true);
         } else {
             requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, Constants.PERMISSION_LOCATION_REQUEST_CODE);
         }
@@ -160,15 +155,7 @@ public class MapFragment extends Fragment implements LocationEngineListener {
         mLocationEngine.setPriority(LocationEnginePriority.HIGH_ACCURACY);
         mLocationEngine.activate();
 
-        Location lastLocation = mLocationEngine.getLastLocation();
-        if (lastLocation == null) {
-            mLocationEngine.addLocationEngineListener(this);
-        }
-    }
-
-    private boolean hasLocationPermissions() {
-        //Request Location Permission
-        return getActivity() != null && ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) == PERMISSION_GRANTED;
+        mLocationEngine.addLocationEngineListener(this);
     }
 
     @Override
@@ -181,8 +168,10 @@ public class MapFragment extends Fragment implements LocationEngineListener {
     @SuppressWarnings( {"MissingPermission"})
     public void onStart() {
         super.onStart();
-        if (mLocationLayerPlugin != null) {
-            mLocationLayerPlugin.onStart();
+        if (PermissionsManager.areLocationPermissionsGranted(getActivity())) {
+            if (mLocationEngine != null) {
+                mLocationEngine.activate();
+            }
         }
         mMapView.onStart();
     }
@@ -192,11 +181,8 @@ public class MapFragment extends Fragment implements LocationEngineListener {
         super.onStop();
         if (mLocationEngine != null) {
             mLocationEngine.removeLocationUpdates();
+            mLocationEngine.removeLocationEngineListener(this);
         }
-        if (mLocationLayerPlugin != null) {
-            mLocationLayerPlugin.onStop();
-        }
-
         mMapView.onStop();
     }
 
@@ -219,8 +205,8 @@ public class MapFragment extends Fragment implements LocationEngineListener {
     }
 
     @Override
-    public void onDestroy() {
-        super.onDestroy();
+    public void onDestroyView() {
+        super.onDestroyView();
         mMapView.onDestroy();
         if (mLocationEngine != null) {
             mLocationEngine.deactivate();
@@ -241,7 +227,7 @@ public class MapFragment extends Fragment implements LocationEngineListener {
                 if (!(grantResults.length > 0 && grantResults[0] == PERMISSION_GRANTED)) {
                     Toast.makeText(getActivity(), R.string.location_is_needed_to_function, Toast.LENGTH_LONG).show();
                 } else {
-                    enableLocationPlugin();
+                    enableLocationComponent();
                     toggleCurrentLocationButton();
                 }
                 break;
@@ -253,7 +239,7 @@ public class MapFragment extends Fragment implements LocationEngineListener {
     @SuppressLint("MissingPermission")
     @Override
     public void onConnected() {
-        if (mLocationEngine != null && hasLocationPermissions()) {
+        if (mLocationEngine != null && PermissionsManager.areLocationPermissionsGranted(getActivity())) {
             mLocationEngine.requestLocationUpdates();
         }
     }

@@ -215,8 +215,8 @@ public class DirectionFragment extends Fragment {
     }
 
     @Override
-    public void onDestroy() {
-        super.onDestroy();
+    public void onDestroyView() {
+        super.onDestroyView();
         mMapView.onDestroy();
     }
 

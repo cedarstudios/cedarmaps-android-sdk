@@ -26,10 +26,12 @@ final class TileConfigurator {
                 });
             }
         } else {
+            Mapbox.getInstance(context, Constants.INITIAL_TOKEN);
+
             AuthenticationManager.getInstance().getAccessToken(new AccessTokenListener() {
                 @Override
                 public void onSuccess(@NonNull String accessToken) {
-                    Mapbox.getInstance(context, accessToken);
+                    Mapbox.setAccessToken("pk." + accessToken);
                     if (completionHandler != null) {
                         completionHandler.onSuccess();
                     }

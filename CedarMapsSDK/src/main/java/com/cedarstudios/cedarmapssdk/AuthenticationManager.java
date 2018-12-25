@@ -1,5 +1,6 @@
 package com.cedarstudios.cedarmapssdk;
 
+import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -24,6 +25,7 @@ import java.net.URLDecoder;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.FormBody;
+import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
@@ -38,6 +40,7 @@ final class AuthenticationManager {
     private static final String defaultBaseURL = "https://api.cedarmaps.com/v1/";
     private static final String SAVED_ACCESS_TOKEN_KEY = "com.cedarstudios.cedarmapssdk.saved_access_token";
 
+    @SuppressLint("StaticFieldLeak")
     private static AuthenticationManager instance;
 
     private String mClientID;
@@ -52,7 +55,11 @@ final class AuthenticationManager {
     private BroadcastReceiver mapViewError401BroadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            regenerateAccessToken();
+            try {
+                regenerateAccessToken();
+            } catch (CedarMapsException e) {
+                e.printStackTrace();
+            }
         }
     };
 
@@ -149,19 +156,21 @@ final class AuthenticationManager {
         }
     }
 
-    void regenerateAccessToken() {
+    void regenerateAccessToken() throws CedarMapsException {
         if (isFetchingNewAccessToken) {
             return;
         }
         isFetchingNewAccessToken = true;
         invalidateCredentials();
 
+        Mapbox.getInstance(getContext(), Constants.INITIAL_TOKEN);
+
         fetchAccessTokenFromServer(new AccessTokenListener() {
             @Override
             public void onSuccess(@NonNull String accessToken) {
                 isFetchingNewAccessToken = false;
                 if (!TextUtils.isEmpty(accessToken)) {
-                    Mapbox.getInstance(getContext(), accessToken);
+                    Mapbox.setAccessToken("pk." + accessToken);
 
                     Intent intent = new Intent(ACCESS_TOKEN_READY_INTENT);
                     LocalBroadcastManager.getInstance(getContext()).sendBroadcast(intent);
@@ -175,7 +184,7 @@ final class AuthenticationManager {
         });
     }
 
-    private boolean saveAccessToken() throws CedarMapsException {
+    private void saveAccessToken() throws CedarMapsException {
         if (TextUtils.isEmpty(mAccessToken)) {
             throw new CedarMapsException("AccessToken is not available to save. Try calling 'getAccessToken' first.");
         }
@@ -186,7 +195,6 @@ final class AuthenticationManager {
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putString(SAVED_ACCESS_TOKEN_KEY, mAccessToken);
         editor.apply();
-        return true;
     }
 
     @Nullable
@@ -215,9 +223,13 @@ final class AuthenticationManager {
         }
     }
 
-    private void fetchAccessTokenFromServer(final AccessTokenListener completionHandler) {
+    private void fetchAccessTokenFromServer(final AccessTokenListener completionHandler) throws CedarMapsException {
 
-        CedarOkHttpClient client = CedarOkHttpClient.getInstance();
+        if (mContext == null) {
+            throw new CedarMapsException("Context is not set. Please call 'setContext' method on CedarMaps.getInstance()");
+        }
+
+        OkHttpClient client = CedarOkHttpClient.getSharedInstance(mContext);
         final Handler handler = new Handler(Looper.getMainLooper());
 
         String url = mBaseURL + "token";

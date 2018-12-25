@@ -3,6 +3,7 @@ package com.cedarmaps.sdksampleapp.fragments;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.AppCompatTextView;
 import android.text.TextUtils;
@@ -20,7 +21,6 @@ import com.cedarstudios.cedarmapssdk.listeners.ReverseGeocodeResultListener;
 import com.cedarstudios.cedarmapssdk.model.geocoder.reverse.ReverseGeocode;
 import com.mapbox.mapboxsdk.camera.CameraPosition;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
-import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
 
 public class ReverseGeocodeFragment extends Fragment {
 
@@ -174,8 +174,8 @@ public class ReverseGeocodeFragment extends Fragment {
     }
 
     @Override
-    public void onDestroy() {
-        super.onDestroy();
+    public void onDestroyView() {
+        super.onDestroyView();
         mMapView.onDestroy();
     }
 
