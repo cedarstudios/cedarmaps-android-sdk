@@ -1,13 +1,14 @@
 package com.cedarmaps.sdksampleapp.fragments;
 
-import android.Manifest;
 import android.annotation.SuppressLint;
+import android.graphics.BitmapFactory;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -16,26 +17,45 @@ import android.view.ViewGroup;
 import android.widget.Toast;
 import com.cedarmaps.sdksampleapp.Constants;
 import com.cedarmaps.sdksampleapp.R;
-import com.cedarstudios.cedarmapssdk.MapView;
+import com.cedarstudios.cedarmapssdk.listeners.OnStyleConfigurationListener;
+import com.cedarstudios.cedarmapssdk.mapbox.MapView;
+import com.cedarstudios.cedarmapssdk.mapbox.StyleConfigurator;
 import com.mapbox.android.core.location.LocationEngine;
-import com.mapbox.android.core.location.LocationEngineListener;
-import com.mapbox.android.core.location.LocationEnginePriority;
-import com.mapbox.android.core.location.LocationEngineProvider;
+import com.mapbox.android.core.location.LocationEngineCallback;
+import com.mapbox.android.core.location.LocationEngineRequest;
+import com.mapbox.android.core.location.LocationEngineResult;
+import com.mapbox.android.core.permissions.PermissionsListener;
 import com.mapbox.android.core.permissions.PermissionsManager;
-import com.mapbox.mapboxsdk.annotations.MarkerOptions;
+import com.mapbox.geojson.Feature;
+import com.mapbox.geojson.FeatureCollection;
+import com.mapbox.geojson.Point;
 import com.mapbox.mapboxsdk.camera.CameraPosition;
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory;
 import com.mapbox.mapboxsdk.geometry.LatLng;
+import com.mapbox.mapboxsdk.location.LocationComponent;
+import com.mapbox.mapboxsdk.location.LocationComponentActivationOptions;
 import com.mapbox.mapboxsdk.location.modes.RenderMode;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
+import com.mapbox.mapboxsdk.maps.Style;
+import com.mapbox.mapboxsdk.style.layers.PropertyFactory;
+import com.mapbox.mapboxsdk.style.layers.SymbolLayer;
+import com.mapbox.mapboxsdk.style.sources.GeoJsonSource;
 
-import static android.support.v4.content.PermissionChecker.PERMISSION_GRANTED;
+import java.lang.ref.WeakReference;
+import java.util.List;
 
-public class MapFragment extends Fragment implements LocationEngineListener {
+import static android.os.Looper.getMainLooper;
+
+public class MapFragment extends Fragment implements PermissionsListener {
 
     private MapView mMapView;
     private MapboxMap mMapboxMap;
     private LocationEngine mLocationEngine = null;
+    private long DEFAULT_INTERVAL_IN_MILLISECONDS = 1000L;
+    private long DEFAULT_MAX_WAIT_TIME = DEFAULT_INTERVAL_IN_MILLISECONDS * 5;
+    private MapFragmentLocationCallback callback = new MapFragmentLocationCallback(this);
+
+    private PermissionsManager mPermissionsManager;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, final ViewGroup container, Bundle savedInstanceState) {
@@ -54,7 +74,27 @@ public class MapFragment extends Fragment implements LocationEngineListener {
         mMapView.getMapAsync(mapboxMap -> {
             mMapboxMap = mapboxMap;
 
-            mMapboxMap.setMaxZoomPreference(17);
+            StyleConfigurator.configure(
+                    com.cedarstudios.cedarmapssdk.mapbox.Style.VECTOR_LIGHT, new OnStyleConfigurationListener() {
+                @Override
+                public void onSuccess(com.mapbox.mapboxsdk.maps.Style.Builder styleBuilder) {
+                    mapboxMap.setStyle(styleBuilder, style -> {
+                        //Add marker to map
+                        addMarkerToMapViewAtPosition(Constants.VANAK_SQUARE);
+
+                        if (PermissionsManager.areLocationPermissionsGranted(getActivity())) {
+                            enableLocationComponent(style);
+                        }
+                    });
+                }
+
+                @Override
+                public void onFailure(@NonNull String errorMessage) {
+                    Toast.makeText(getContext(), errorMessage, Toast.LENGTH_SHORT).show();
+                }
+            });
+
+            mMapboxMap.setMaxZoomPreference(18);
             mMapboxMap.setMinZoomPreference(6);
             mMapboxMap.setCameraPosition(
                     new CameraPosition.Builder()
@@ -62,17 +102,11 @@ public class MapFragment extends Fragment implements LocationEngineListener {
                             .zoom(15)
                             .build());
 
-            if (PermissionsManager.areLocationPermissionsGranted(getActivity())) {
-                enableLocationComponent();
-            }
-
-            //Add marker to map
-            addMarkerToMapViewAtPosition(Constants.VANAK_SQUARE);
-
             //Set a touch event listener on the map
             mMapboxMap.addOnMapClickListener(point -> {
-                removeAllMarkersFromMapView();
+//                removeAllMarkersFromMapView();
                 addMarkerToMapViewAtPosition(point);
+                return true;
             });
 
             setupCurrentLocationButton();
@@ -81,14 +115,67 @@ public class MapFragment extends Fragment implements LocationEngineListener {
 
     //Add a marker to the map
     private void addMarkerToMapViewAtPosition(LatLng coordinate) {
-        if (mMapboxMap != null) {
-            mMapboxMap.addMarker(new MarkerOptions().position(coordinate));
+        if (mMapboxMap != null && mMapboxMap.getStyle() != null) {
+            com.mapbox.mapboxsdk.maps.Style style = mMapboxMap.getStyle();
+
+            String markerIconId = "marker-icon-id";
+
+            if (style.getImage(markerIconId) == null) {
+                style.addImage(markerIconId,
+                        BitmapFactory.decodeResource(
+                                getResources(), R.drawable.cedarmaps_marker_icon_default));
+            }
+
+            String sourceId = "source-id";
+
+            GeoJsonSource geoJsonSource;
+            if (style.getSource(sourceId) == null) {
+                geoJsonSource = new GeoJsonSource(sourceId);
+                style.addSource(geoJsonSource);
+            } else {
+                geoJsonSource = (GeoJsonSource)style.getSource(sourceId);
+            }
+            if (geoJsonSource == null) {
+                return;
+            }
+            style.removeSource(geoJsonSource);
+
+            List<Feature> features = geoJsonSource.querySourceFeatures(null);
+            Feature feature = Feature.fromGeometry(
+                    Point.fromLngLat(coordinate.getLongitude(), coordinate.getLatitude()));
+            if (features.isEmpty()) {
+                geoJsonSource.setGeoJson(feature);
+            } else {
+                features.add(feature);
+                geoJsonSource.setGeoJson(FeatureCollection.fromFeatures(features));
+            }
+
+            style.addSource(geoJsonSource);
+
+            String symbolLayerId = "layer-id";
+            style.removeLayer(symbolLayerId);
+
+            SymbolLayer symbolLayer = new SymbolLayer(symbolLayerId, sourceId);
+            symbolLayer.withProperties(
+                    PropertyFactory.iconImage(markerIconId)
+            );
+            style.addLayer(symbolLayer);
         }
     }
 
     //Clear all markers on the map
     private void removeAllMarkersFromMapView() {
-        mMapboxMap.clear();
+        if (mMapboxMap != null && mMapboxMap.getStyle() != null) {
+            com.mapbox.mapboxsdk.maps.Style style = mMapboxMap.getStyle();
+
+            String markerIconId = "marker-icon-id";
+            String sourceId = "source-id";
+            String symbolLayerId = "layer-id";
+
+            style.removeLayer(symbolLayerId);
+            style.removeSource(sourceId);
+            style.removeImage(markerIconId);
+        }
     }
 
     private void animateToCoordinate(LatLng coordinate, int zoomLevel) {
@@ -103,7 +190,9 @@ public class MapFragment extends Fragment implements LocationEngineListener {
     private void setupCurrentLocationButton() {
         FloatingActionButton fb = getView().findViewById(R.id.showCurrentLocationButton);
         fb.setOnClickListener(v -> {
-            enableLocationComponent();
+            if (mMapboxMap.getStyle() != null) {
+                enableLocationComponent(mMapboxMap.getStyle());
+            }
 
             toggleCurrentLocationButton();
         });
@@ -133,29 +222,42 @@ public class MapFragment extends Fragment implements LocationEngineListener {
     }
 
     @SuppressWarnings( {"MissingPermission"})
-    private void enableLocationComponent() {
+    private void enableLocationComponent(@NonNull Style loadedMapStyle) {
         if (getActivity() == null) {
             return;
         }
         // Check if permissions are enabled and if not request
         if (PermissionsManager.areLocationPermissionsGranted(getActivity())) {
-            // Create a location engine instance
-            initializeLocationEngine();
 
-            mMapboxMap.getLocationComponent().activateLocationComponent(getActivity());
-            mMapboxMap.getLocationComponent().setLocationComponentEnabled(true);
+            LocationComponent locationComponent = mMapboxMap.getLocationComponent();
+
+            LocationComponentActivationOptions locationComponentActivationOptions =
+                    LocationComponentActivationOptions.builder(getActivity(), loadedMapStyle)
+                            .useDefaultLocationEngine(false)
+                            .build();
+
+            locationComponent.activateLocationComponent(locationComponentActivationOptions);
+            locationComponent.setLocationComponentEnabled(true);
+
+            initializeLocationEngine();
         } else {
-            requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, Constants.PERMISSION_LOCATION_REQUEST_CODE);
+            mPermissionsManager = new PermissionsManager(this);
+            mPermissionsManager.requestLocationPermissions(getActivity());
         }
     }
 
     @SuppressWarnings( {"MissingPermission"})
     private void initializeLocationEngine() {
-        mLocationEngine = new LocationEngineProvider(getContext()).obtainBestLocationEngineAvailable();
-        mLocationEngine.setPriority(LocationEnginePriority.HIGH_ACCURACY);
-        mLocationEngine.activate();
+        if (getActivity() == null) {
+            return;
+        }
 
-        mLocationEngine.addLocationEngineListener(this);
+        LocationEngineRequest request = new LocationEngineRequest.Builder(DEFAULT_INTERVAL_IN_MILLISECONDS)
+                .setPriority(LocationEngineRequest.PRIORITY_HIGH_ACCURACY)
+                .setMaxWaitTime(DEFAULT_MAX_WAIT_TIME).build();
+
+        mLocationEngine.requestLocationUpdates(request, callback, getMainLooper());
+        mLocationEngine.getLastLocation(callback);
     }
 
     @Override
@@ -168,21 +270,12 @@ public class MapFragment extends Fragment implements LocationEngineListener {
     @SuppressWarnings( {"MissingPermission"})
     public void onStart() {
         super.onStart();
-        if (PermissionsManager.areLocationPermissionsGranted(getActivity())) {
-            if (mLocationEngine != null) {
-                mLocationEngine.activate();
-            }
-        }
         mMapView.onStart();
     }
 
     @Override
     public void onStop() {
         super.onStop();
-        if (mLocationEngine != null) {
-            mLocationEngine.removeLocationUpdates();
-            mLocationEngine.removeLocationEngineListener(this);
-        }
         mMapView.onStop();
     }
 
@@ -207,10 +300,10 @@ public class MapFragment extends Fragment implements LocationEngineListener {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        mMapView.onDestroy();
         if (mLocationEngine != null) {
-            mLocationEngine.deactivate();
+            mLocationEngine.removeLocationUpdates(callback);
         }
+        mMapView.onDestroy();
     }
 
     @Override
@@ -222,36 +315,64 @@ public class MapFragment extends Fragment implements LocationEngineListener {
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        switch (requestCode) {
-            case Constants.PERMISSION_LOCATION_REQUEST_CODE:
-                if (!(grantResults.length > 0 && grantResults[0] == PERMISSION_GRANTED)) {
-                    Toast.makeText(getActivity(), R.string.location_is_needed_to_function, Toast.LENGTH_LONG).show();
-                } else {
-                    enableLocationComponent();
-                    toggleCurrentLocationButton();
-                }
-                break;
-            default:
-                break;
-        }
-    }
-
-    @SuppressLint("MissingPermission")
-    @Override
-    public void onConnected() {
-        if (mLocationEngine != null && PermissionsManager.areLocationPermissionsGranted(getActivity())) {
-            mLocationEngine.requestLocationUpdates();
-        }
+        mPermissionsManager.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
     @Override
-    public void onLocationChanged(Location location) {
+    public void onExplanationNeeded(List<String> permissionsToExplain) {
+        Toast.makeText(getActivity(), R.string.location_is_needed_to_function, Toast.LENGTH_LONG).show();
+    }
 
+    @Override
+    public void onPermissionResult(boolean granted) {
+        if (granted) {
+            if (mMapboxMap.getStyle() != null) {
+                enableLocationComponent(mMapboxMap.getStyle());
+                toggleCurrentLocationButton();
+            }
+        } else {
+            Toast.makeText(getActivity(), R.string.location_is_needed_to_function, Toast.LENGTH_LONG).show();
+        }
     }
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
         menu.clear();
+    }
+
+    private static class MapFragmentLocationCallback implements LocationEngineCallback<LocationEngineResult> {
+
+        private final WeakReference<MapFragment> fragmentWeakReference;
+
+        MapFragmentLocationCallback(MapFragment fragment) {
+            fragmentWeakReference = new WeakReference<>(fragment);
+        }
+
+        /* The LocationEngineCallback interface's method which fires when the device's location has changed.
+        *
+        * @param result the LocationEngineResult object which has the last known location within it.
+        */
+        @Override
+        public void onSuccess(LocationEngineResult result) {
+            MapFragment fragment = fragmentWeakReference.get();
+
+            if (fragment != null) {
+                Location location = result.getLastLocation();
+
+                if (location == null) {
+                    return;
+                }
+
+                if (fragment.mMapboxMap != null && result.getLastLocation() != null) {
+                    fragment.mMapboxMap.getLocationComponent().forceLocationUpdate(result.getLastLocation());
+                }
+            }
+        }
+
+        @Override
+        public void onFailure(@NonNull Exception exception) {
+            Log.d("LocationChange", exception.getLocalizedMessage());
+        }
     }
 }

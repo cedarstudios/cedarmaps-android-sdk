@@ -17,12 +17,14 @@ import android.util.DisplayMetrics;
 import com.cedarstudios.cedarmapssdk.listeners.AccessTokenListener;
 import com.cedarstudios.cedarmapssdk.listeners.ForwardGeocodeResultsListener;
 import com.cedarstudios.cedarmapssdk.listeners.GeoRoutingResultListener;
-import com.cedarstudios.cedarmapssdk.listeners.OnTilesConfigured;
+import com.cedarstudios.cedarmapssdk.listeners.OnStyleConfigurationListener;
 import com.cedarstudios.cedarmapssdk.listeners.ReverseGeocodeResultListener;
 import com.cedarstudios.cedarmapssdk.listeners.StaticMapImageResultListener;
+import com.cedarstudios.cedarmapssdk.mapbox.AuthenticationManager;
 import com.cedarstudios.cedarmapssdk.model.geocoder.forward.ForwardGeocodeResponse;
 import com.cedarstudios.cedarmapssdk.model.geocoder.reverse.ReverseGeocodeResponse;
 import com.cedarstudios.cedarmapssdk.model.routing.GeoRoutingResponse;
+import com.mapbox.mapboxsdk.Mapbox;
 import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.mapboxsdk.geometry.LatLngBounds;
 
@@ -64,15 +66,6 @@ public class CedarMaps {
     private CedarMaps() {
         mMapID = defaultMapID;
         mDirectionID = defaultDirectionID;
-    }
-
-    /**
-     * Preparing Tiles for using in a mapView.
-     * Make sure to call setClientID , setClientSecret and setContext before calling this method.
-     * @param completionHandler The handler to notify when preparing tiles was finished with success or error.
-     */
-    public void prepareTiles(OnTilesConfigured completionHandler) {
-        TileConfigurator.prepare(completionHandler);
     }
     //endregion
 
@@ -556,21 +549,21 @@ public class CedarMaps {
             paramScale = "@2x";
         }
 
-        String paramMarkers = "";
+        StringBuilder paramMarkers = new StringBuilder();
         if (markers != null && markers.size() > 0) {
-            paramMarkers = "?markers=";
+            paramMarkers = new StringBuilder("?markers=");
             for (StaticMarker marker: markers) {
                 String item = String.format(Locale.ENGLISH, "%s|%f,%f|",
                         marker.markerUri == null ? "marker-default" : marker.markerUri.toString(),
                         marker.coordinate.getLatitude(),
                         marker.coordinate.getLongitude());
-                paramMarkers += item;
+                paramMarkers.append(item);
             }
-            paramMarkers = paramMarkers.substring(0, paramMarkers.length() - 1);
+            paramMarkers = new StringBuilder(paramMarkers.substring(0, paramMarkers.length() - 1));
         }
 
         String url = String.format(Locale.ENGLISH,
-                authManager.getAPIBaseURL() + "static/light/%s/%s%s%s", paramPosition, paramDimension, paramScale, paramMarkers);
+                authManager.getAPIBaseURL() + "static/light/%s/%s%s%s", paramPosition, paramDimension, paramScale, paramMarkers.toString());
 
         getResponseBodyFromURL(url, new NetworkResponseBodyCompletionHandler() {
             @Override
@@ -641,7 +634,7 @@ public class CedarMaps {
 
                 client.newCall(request).enqueue(new Callback() {
                     @Override
-                    public void onResponse(Call call, final Response response) throws IOException {
+                    public void onResponse(Call call, final Response response) {
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {

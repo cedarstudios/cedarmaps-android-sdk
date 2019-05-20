@@ -129,7 +129,7 @@ CedarMaps.getInstance().prepareTiles(new OnTilesConfigured() {
 To add the CedarMaps `MapView` as a layout element, add the following to your xml file:
 
 ```xml
-<com.cedarstudios.cedarmapssdk.MapView
+<com.cedarstudios.cedarmapssdk.mapbox.MapView
         android:id="@+id/mapView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"

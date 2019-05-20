@@ -109,14 +109,15 @@ public class SearchViewAdapter extends RecyclerView.Adapter<SearchViewAdapter.Se
         mItems = items;
     }
 
+    @NonNull
     @Override
-    public SearchViewAdapter.SearchViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public SearchViewAdapter.SearchViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View inflatedView = LayoutInflater.from(parent.getContext()).inflate(R.layout.activity_search_autocomplete_item, parent, false);
         return new SearchViewHolder(inflatedView);
     }
 
     @Override
-    public void onBindViewHolder(SearchViewAdapter.SearchViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull SearchViewAdapter.SearchViewHolder holder, int position) {
         ForwardGeocode item = mItems.get(position);
         holder.bindData(item);
     }

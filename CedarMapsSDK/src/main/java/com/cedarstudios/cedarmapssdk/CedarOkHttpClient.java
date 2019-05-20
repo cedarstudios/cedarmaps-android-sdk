@@ -13,11 +13,11 @@ import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Response;
 
-final class CedarOkHttpClient {
+public class CedarOkHttpClient {
 
     private static OkHttpClient sharedInstance;
 
-    static OkHttpClient getSharedInstance(final Context applicationContext) {
+    public static OkHttpClient getSharedInstance(final Context applicationContext) {
         if (sharedInstance != null) {
             return sharedInstance;
         }

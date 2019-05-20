@@ -1,18 +1,16 @@
-package com.cedarstudios.cedarmapssdk;
+package com.cedarstudios.cedarmapssdk.mapbox;
 
 import android.annotation.SuppressLint;
-import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v4.content.LocalBroadcastManager;
 import android.text.TextUtils;
 
+import com.cedarstudios.cedarmapssdk.CedarMapsException;
+import com.cedarstudios.cedarmapssdk.CedarOkHttpClient;
 import com.cedarstudios.cedarmapssdk.listeners.AccessTokenListener;
 import com.mapbox.mapboxsdk.Mapbox;
 
@@ -21,6 +19,7 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.util.Map;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -31,11 +30,7 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 
-import static com.mapbox.mapboxsdk.constants.MapboxConstants.INTENT_FILTER_TILE_HTTP_CODE_401;
-
-final class AuthenticationManager {
-
-    static final String ACCESS_TOKEN_READY_INTENT = "ACCESS_TOKEN_READY_INTENT";
+final public class AuthenticationManager {
 
     private static final String defaultBaseURL = "https://api.cedarmaps.com/v1/";
     private static final String SAVED_ACCESS_TOKEN_KEY = "com.cedarstudios.cedarmapssdk.saved_access_token";
@@ -52,16 +47,6 @@ final class AuthenticationManager {
     private Context mContext = null;
 
     private boolean isFetchingNewAccessToken = false;
-    private BroadcastReceiver mapViewError401BroadcastReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            try {
-                regenerateAccessToken();
-            } catch (CedarMapsException e) {
-                e.printStackTrace();
-            }
-        }
-    };
 
     private AuthenticationManager() {
         mBaseURL = defaultBaseURL;
@@ -74,19 +59,19 @@ final class AuthenticationManager {
         return instance;
     }
 
-    void setClientID(@NonNull String clientID) {
+    public void setClientID(@NonNull String clientID) {
         if (!clientID.equals(mClientID)) {
             mClientID = clientID;
         }
     }
 
-    void setClientSecret(@NonNull String clientSecret) {
+    public void setClientSecret(@NonNull String clientSecret) {
         if (!clientSecret.equals(mClientSecret)) {
             mClientSecret = clientSecret;
         }
     }
 
-    void getAccessToken(final @Nullable AccessTokenListener completionHandler) {
+    public void getAccessToken(final @Nullable AccessTokenListener completionHandler) {
 
         Handler handler = new Handler(Looper.getMainLooper());
 
@@ -133,16 +118,14 @@ final class AuthenticationManager {
         }
     }
 
-    void setContext(@NonNull Context context) {
+    public void setContext(@NonNull Context context) {
         if (mContext == null) {
             mContext = context.getApplicationContext();
-            LocalBroadcastManager.getInstance(mContext)
-                    .registerReceiver(instance.mapViewError401BroadcastReceiver,
-                            new IntentFilter(INTENT_FILTER_TILE_HTTP_CODE_401));
+            Mapbox.getInstance(mContext, Constants.INITIAL_TOKEN);
         }
     }
 
-    Context getContext() {
+    public Context getContext() {
         return mContext;
     }
 
@@ -156,14 +139,18 @@ final class AuthenticationManager {
         }
     }
 
-    void regenerateAccessToken() throws CedarMapsException {
+    public void regenerateAccessToken() throws CedarMapsException {
         if (isFetchingNewAccessToken) {
             return;
         }
         isFetchingNewAccessToken = true;
         invalidateCredentials();
 
-        Mapbox.getInstance(getContext(), Constants.INITIAL_TOKEN);
+        if (Mapbox.getAccessToken() == null) {
+            Mapbox.getInstance(getContext(), Constants.INITIAL_TOKEN);
+        } else {
+            Mapbox.setAccessToken(Constants.INITIAL_TOKEN);
+        }
 
         fetchAccessTokenFromServer(new AccessTokenListener() {
             @Override
@@ -171,9 +158,6 @@ final class AuthenticationManager {
                 isFetchingNewAccessToken = false;
                 if (!TextUtils.isEmpty(accessToken)) {
                     Mapbox.setAccessToken("pk." + accessToken);
-
-                    Intent intent = new Intent(ACCESS_TOKEN_READY_INTENT);
-                    LocalBroadcastManager.getInstance(getContext()).sendBroadcast(intent);
                 }
             }
 
@@ -198,7 +182,7 @@ final class AuthenticationManager {
     }
 
     @Nullable
-    String getSavedAccessToken() throws CedarMapsException {
+    public String getSavedAccessToken() throws CedarMapsException {
         if (mContext == null) {
             throw new CedarMapsException("Context is not set. Please call 'setContext' method on CedarMaps.getInstance()");
         }
@@ -207,11 +191,11 @@ final class AuthenticationManager {
         return sharedPreferences.getString(SAVED_ACCESS_TOKEN_KEY, null);
     }
 
-    String getAPIBaseURL() {
+    public String getAPIBaseURL() {
         return mBaseURL;
     }
 
-    void setAPIBaseURL(@Nullable String baseURL) {
+    public void setAPIBaseURL(@Nullable String baseURL) {
         if (baseURL == null) {
             this.mBaseURL = defaultBaseURL;
         } else {
@@ -256,7 +240,7 @@ final class AuthenticationManager {
             }
 
             @Override
-            public void onResponse(Call call, final Response response) throws IOException {
+            public void onResponse(Call call, final Response response) {
                 ResponseBody body = response.body();
                 if (body == null) {
                     handler.post(new Runnable() {
@@ -283,12 +267,12 @@ final class AuthenticationManager {
                                         }
                                     }
                                 });
-                            } catch (final UnsupportedEncodingException ignore) {
+                            } catch (final UnsupportedEncodingException e) {
                                 handler.post(new Runnable() {
                                     @Override
                                     public void run() {
                                         if (completionHandler != null) {
-                                            completionHandler.onFailure(ignore.getMessage());
+                                            completionHandler.onFailure(e.getMessage());
                                         }
                                     }
                                 });

@@ -8,15 +8,12 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.view.MenuItem;
-import android.widget.Toast;
 
 import com.cedarmaps.sdksampleapp.fragments.DirectionFragment;
 import com.cedarmaps.sdksampleapp.fragments.ForwardGeocodeFragment;
 import com.cedarmaps.sdksampleapp.fragments.MapFragment;
 import com.cedarmaps.sdksampleapp.fragments.ReverseGeocodeFragment;
 import com.cedarmaps.sdksampleapp.fragments.StaticMapFragment;
-import com.cedarstudios.cedarmapssdk.CedarMaps;
-import com.cedarstudios.cedarmapssdk.listeners.OnTilesConfigured;
 
 import java.util.Locale;
 
@@ -27,19 +24,9 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        CedarMaps.getInstance().prepareTiles(new OnTilesConfigured() {
-            @Override
-            public void onSuccess() {
-                BottomNavigationView navigation = findViewById(R.id.navigationView);
-                navigation.setOnNavigationItemSelectedListener(MainActivity.this);
-                navigation.setSelectedItemId(R.id.navigation_map);
-            }
-
-            @Override
-            public void onFailure(@NonNull String error) {
-                Toast.makeText(MainActivity.this, R.string.error_preparing_tiles, Toast.LENGTH_LONG).show();
-            }
-        });
+        BottomNavigationView navigation = findViewById(R.id.navigationView);
+        navigation.setOnNavigationItemSelectedListener(MainActivity.this);
+        navigation.setSelectedItemId(R.id.navigation_map);
     }
 
     @Override

@@ -23,7 +23,7 @@ import android.widget.Toast;
 import com.cedarmaps.sdksampleapp.R;
 import com.cedarmaps.sdksampleapp.SearchViewAdapter;
 import com.cedarstudios.cedarmapssdk.CedarMaps;
-import com.cedarstudios.cedarmapssdk.MapView;
+import com.cedarstudios.cedarmapssdk.mapbox.MapView;
 import com.cedarstudios.cedarmapssdk.listeners.ForwardGeocodeResultsListener;
 import com.cedarstudios.cedarmapssdk.model.geocoder.forward.ForwardGeocode;
 import com.mapbox.mapboxsdk.annotations.Marker;
@@ -42,8 +42,6 @@ public class ForwardGeocodeFragment extends Fragment {
     private RecyclerView mRecyclerView;
     private ProgressBar mProgressBar;
     private LinearLayout mLinearLayout;
-    private LinearLayoutManager mLinearLayoutManager;
-    private DividerItemDecoration mDividerItemDecoration;
     private State state = State.MAP;
 
     private enum State {
@@ -84,7 +82,7 @@ public class ForwardGeocodeFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         mMapView = view.findViewById(R.id.mapView);
-        mMapView.setStyleUrl("https://api.cedarmaps.com/v1/tiles/light.json");
+//        mMapView.setStyleUrl("https://api.cedarmaps.com/v1/tiles/light.json");
         mMapView.onCreate(savedInstanceState);
         mMapView.getMapAsync(mapboxMap -> {
             mMapboxMap = mapboxMap;
@@ -97,10 +95,10 @@ public class ForwardGeocodeFragment extends Fragment {
         mLinearLayout = view.findViewById(R.id.search_results_linear_layout);
         mProgressBar = view.findViewById(R.id.search_progress_bar);
 
-        mLinearLayoutManager = new LinearLayoutManager(getActivity());
+        LinearLayoutManager mLinearLayoutManager = new LinearLayoutManager(getActivity());
         mRecyclerView.setLayoutManager(mLinearLayoutManager);
 
-        mDividerItemDecoration = new DividerItemDecoration(mRecyclerView.getContext(), mLinearLayoutManager.getOrientation());
+        DividerItemDecoration mDividerItemDecoration = new DividerItemDecoration(mRecyclerView.getContext(), mLinearLayoutManager.getOrientation());
         mRecyclerView.addItemDecoration(mDividerItemDecoration);
 
         view.setFocusableInTouchMode(true);

@@ -7,7 +7,7 @@
     android:orientation="vertical"
     tools:context="com.cedarmaps.sdksampleapp.fragments.DirectionFragment">
 
-    <com.cedarstudios.cedarmapssdk.MapView
+    <com.cedarstudios.cedarmapssdk.mapbox.MapView
         android:id="@+id/mapView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

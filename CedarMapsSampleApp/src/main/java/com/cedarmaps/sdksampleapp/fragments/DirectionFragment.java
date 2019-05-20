@@ -19,7 +19,7 @@ import android.widget.Toast;
 
 import com.cedarmaps.sdksampleapp.R;
 import com.cedarstudios.cedarmapssdk.CedarMaps;
-import com.cedarstudios.cedarmapssdk.MapView;
+import com.cedarstudios.cedarmapssdk.mapbox.MapView;
 import com.cedarstudios.cedarmapssdk.listeners.GeoRoutingResultListener;
 import com.cedarstudios.cedarmapssdk.model.routing.GeoRouting;
 import com.cedarstudios.cedarmapssdk.model.routing.Route;
@@ -95,6 +95,7 @@ public class DirectionFragment extends Fragment {
                     addMarkerToMapViewAtPosition(latLng, R.drawable.cedarmaps_marker_icon_end);
                     computeDirection(markers.get(0).getPosition(), markers.get(1).getPosition());
                 }
+                return true;
             });
         });
 
