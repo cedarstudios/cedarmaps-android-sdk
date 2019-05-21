@@ -17,14 +17,12 @@ import android.util.DisplayMetrics;
 import com.cedarstudios.cedarmapssdk.listeners.AccessTokenListener;
 import com.cedarstudios.cedarmapssdk.listeners.ForwardGeocodeResultsListener;
 import com.cedarstudios.cedarmapssdk.listeners.GeoRoutingResultListener;
-import com.cedarstudios.cedarmapssdk.listeners.OnStyleConfigurationListener;
 import com.cedarstudios.cedarmapssdk.listeners.ReverseGeocodeResultListener;
 import com.cedarstudios.cedarmapssdk.listeners.StaticMapImageResultListener;
 import com.cedarstudios.cedarmapssdk.mapbox.AuthenticationManager;
 import com.cedarstudios.cedarmapssdk.model.geocoder.forward.ForwardGeocodeResponse;
 import com.cedarstudios.cedarmapssdk.model.geocoder.reverse.ReverseGeocodeResponse;
 import com.cedarstudios.cedarmapssdk.model.routing.GeoRoutingResponse;
-import com.mapbox.mapboxsdk.Mapbox;
 import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.mapboxsdk.geometry.LatLngBounds;
 
@@ -638,24 +636,29 @@ public class CedarMaps {
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-                                if (response.code() == 400) {
-                                    completionHandler.onFailure(new CedarMapsException("Invalid Request. Missing Parameters.", response).getMessage());
-                                } else if (response.code() == 401) {
-                                    try {
-                                        authManager.regenerateAccessToken();
-                                    } catch (CedarMapsException e) {
-                                        e.printStackTrace();
-                                    }
-                                    completionHandler.onFailure(new CedarMapsException("Obtaining Bearer Token Failed.", response).getMessage());
-                                } else if (response.code() == 500) {
-                                    completionHandler.onFailure(new CedarMapsException("Internal Server Error.", response).getMessage());
-                                } else {
-                                    ResponseBody body = response.body();
-                                    if (body == null) {
-                                        completionHandler.onFailure(new CedarMapsException("Response body can't be parsed.", response).getMessage());
-                                    } else {
-                                        completionHandler.onSuccess(body);
-                                    }
+                                switch (response.code()) {
+                                    case 400:
+                                        completionHandler.onFailure(new CedarMapsException("Invalid Request. Missing Parameters.", response).getMessage());
+                                        break;
+                                    case 401:
+                                        try {
+                                            authManager.regenerateAccessToken();
+                                        } catch (CedarMapsException e) {
+                                            e.printStackTrace();
+                                        }
+                                        completionHandler.onFailure(new CedarMapsException("Obtaining Bearer Token Failed.", response).getMessage());
+                                        break;
+                                    case 500:
+                                        completionHandler.onFailure(new CedarMapsException("Internal Server Error.", response).getMessage());
+                                        break;
+                                    default:
+                                        ResponseBody body = response.body();
+                                        if (body == null) {
+                                            completionHandler.onFailure(new CedarMapsException("Response body can't be parsed.", response).getMessage());
+                                        } else {
+                                            completionHandler.onSuccess(body);
+                                        }
+                                        break;
                                 }
                             }
                         });

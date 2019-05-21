@@ -11,8 +11,8 @@ public class SampleApp extends Application {
         super.onCreate();
 
         CedarMaps.getInstance()
-                .setClientID(Constants.CLIENT_ID)
-                .setClientSecret(Constants.CLIENT_SECRET)
+                .setClientID(getResources().getString(R.string.client_id))
+                .setClientSecret(getResources().getString(R.string.client_secret))
                 .setContext(this)
                 .setMapID("cedarmaps.mix");
     }
