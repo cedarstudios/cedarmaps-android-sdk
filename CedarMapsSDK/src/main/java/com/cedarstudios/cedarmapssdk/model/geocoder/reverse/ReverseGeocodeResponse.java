@@ -11,7 +11,7 @@ import java.io.Serializable;
 /**
  * This class is used for serializing the Reverse Geocode response using Gson.
  */
-public final class ReverseGeocodeResponse implements Serializable {
+public class ReverseGeocodeResponse implements Serializable {
 
     @SerializedName("result")
     @Expose

@@ -10,7 +10,7 @@ import java.io.Serializable;
 /**
  * This class is used for serializing the Routing response using Gson.
  */
-public final class GeoRoutingResponse implements Serializable {
+public class GeoRoutingResponse implements Serializable {
     @SerializedName("result")
     @Expose
     public GeoRouting result = null;
