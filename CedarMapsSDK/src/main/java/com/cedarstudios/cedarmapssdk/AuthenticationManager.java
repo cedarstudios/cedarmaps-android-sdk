@@ -31,6 +31,7 @@ final class AuthenticationManager {
 
     private static final String defaultBaseURL = "https://api.cedarmaps.com/v1/";
     private static final String SAVED_ACCESS_TOKEN_KEY = "com.cedarstudios.cedarmapssdk.saved_access_token";
+    @SuppressWarnings("SpellCheckingInspection")
     private static final String INITIAL_TOKEN = "pk.spamradecrofnekotxobpamekafasisiht";
 
     @SuppressLint("StaticFieldLeak")

@@ -70,22 +70,22 @@ public class SearchViewAdapter extends RecyclerView.Adapter<SearchViewAdapter.Se
                 mCityTextView.setVisibility(View.GONE);
             }
 
-            String locality = null;
+            StringBuilder locality = null;
             if (item.getComponents() != null && item.getComponents().getLocalities() != null) {
                 for (int i = 0; i < Math.min(item.getComponents().getLocalities().size(), 3); i++) {
                     String l = item.getComponents().getLocalities().get(i);
                     if (locality == null) {
-                        locality = l;
+                        locality = new StringBuilder(l);
                     } else {
-                        locality = locality + "، " + l;
+                        locality.append("، ").append(l);
                     }
                 }
             }
-            if (TextUtils.isEmpty(locality)) {
+            if (TextUtils.isEmpty(locality != null ? locality.toString() : null)) {
                 mLocalityTextView.setText("");
                 mLocalityTextView.setVisibility(View.GONE);
             } else {
-                mLocalityTextView.setText(locality);
+                mLocalityTextView.setText(locality.toString());
                 mLocalityTextView.setVisibility(View.VISIBLE);
                 if (mCityTextView.getText().length() != 0) {
                     String result = city != null ? city + "،" : "";

@@ -8,6 +8,7 @@ import com.google.gson.annotations.SerializedName;
 import java.io.Serializable;
 import java.util.List;
 
+@SuppressWarnings("WeakerAccess")
 public class Instruction implements Serializable {
 
     public static final class Sign {
@@ -15,7 +16,7 @@ public class Instruction implements Serializable {
         public static final int TURN_LEFT = -2;
         public static final int TURN_SLIGHT_LEFT = -1;
         public static final int CONTINUE = 0;
-        public static final int TURN_SLIHGT_RIGHT = 1;
+        public static final int TURN_SLIGHT_RIGHT = 1;
         public static final int TURN_RIGHT = 2;
         public static final int TURN_SHARP_RIGHT = 3;
         public static final int FINISH = 4;

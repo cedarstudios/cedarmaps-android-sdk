@@ -28,5 +28,5 @@ public enum CedarMapsStyle {
     };
 
     public abstract String urlString();
-    private static String baseUrl = AuthenticationManager.getInstance().getAPIBaseURL();
+    private static final String baseUrl = AuthenticationManager.getInstance().getAPIBaseURL();
 }

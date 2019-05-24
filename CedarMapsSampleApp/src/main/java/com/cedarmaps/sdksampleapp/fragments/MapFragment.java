@@ -50,9 +50,6 @@ import static android.os.Looper.getMainLooper;
 
 public class MapFragment extends Fragment implements PermissionsListener {
 
-    private long DEFAULT_INTERVAL_IN_MILLISECONDS = 1000L;
-    private long DEFAULT_MAX_WAIT_TIME = DEFAULT_INTERVAL_IN_MILLISECONDS * 5;
-
     private static final String MARKERS_SOURCE = "markers-source";
     private static final String MARKERS_LAYER = "markers-layer";
     private static final String MARKER_ICON_ID = "marker-icon-id";
@@ -85,6 +82,10 @@ public class MapFragment extends Fragment implements PermissionsListener {
                         @Override
                         public void onSuccess(Style.Builder styleBuilder) {
                             mapboxMap.setStyle(styleBuilder, style -> {
+                                if (getActivity() == null) {
+                                    return;
+                                }
+
                                 //Add marker to map
                                 addMarkerToMapViewAtPosition(Constants.VANAK_SQUARE);
 
@@ -155,16 +156,19 @@ public class MapFragment extends Fragment implements PermissionsListener {
         }
     }
 
-    private void animateToCoordinate(LatLng coordinate, int zoomLevel) {
+    private void animateToCoordinate(LatLng coordinate) {
         CameraPosition position = new CameraPosition.Builder()
                 .target(coordinate)
-                .zoom(zoomLevel)
+                .zoom(16)
                 .build();
         mapboxMap.animateCamera(CameraUpdateFactory.newCameraPosition(position));
     }
 
     @SuppressLint("MissingPermission")
     private void setupCurrentLocationButton() {
+        if (getView() == null) {
+            return;
+        }
         FloatingActionButton fb = getView().findViewById(R.id.showCurrentLocationButton);
         fb.setOnClickListener(v -> {
             if (mapboxMap.getStyle() != null) {
@@ -181,7 +185,7 @@ public class MapFragment extends Fragment implements PermissionsListener {
         }
         Location location = mapboxMap.getLocationComponent().getLastKnownLocation();
         if (location != null) {
-            animateToCoordinate(new LatLng(location.getLatitude(), location.getLongitude()), 16);
+            animateToCoordinate(new LatLng(location.getLatitude(), location.getLongitude()));
         }
 
         switch (mapboxMap.getLocationComponent().getRenderMode()) {
@@ -230,6 +234,8 @@ public class MapFragment extends Fragment implements PermissionsListener {
 
         locationEngine = LocationEngineProvider.getBestLocationEngine(getActivity());
 
+        long DEFAULT_INTERVAL_IN_MILLISECONDS = 1000L;
+        long DEFAULT_MAX_WAIT_TIME = DEFAULT_INTERVAL_IN_MILLISECONDS * 5;
         LocationEngineRequest request = new LocationEngineRequest.Builder(DEFAULT_INTERVAL_IN_MILLISECONDS)
                 .setPriority(LocationEngineRequest.PRIORITY_HIGH_ACCURACY)
                 .setMaxWaitTime(DEFAULT_MAX_WAIT_TIME).build();
@@ -321,7 +327,7 @@ public class MapFragment extends Fragment implements PermissionsListener {
 
     private static class MapFragmentLocationCallback implements LocationEngineCallback<LocationEngineResult> {
 
-        private final WeakReference<MapFragment> fragmentWeakReference;
+        private WeakReference<MapFragment> fragmentWeakReference;
 
         MapFragmentLocationCallback(MapFragment fragment) {
             fragmentWeakReference = new WeakReference<>(fragment);

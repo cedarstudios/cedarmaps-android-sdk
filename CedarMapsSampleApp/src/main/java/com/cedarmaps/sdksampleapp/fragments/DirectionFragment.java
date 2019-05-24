@@ -1,19 +1,16 @@
 package com.cedarmaps.sdksampleapp.fragments;
 
 
-import android.content.res.Resources;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
-import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -28,7 +25,6 @@ import com.cedarstudios.cedarmapssdk.listeners.GeoRoutingResultListener;
 import com.cedarstudios.cedarmapssdk.listeners.OnStyleConfigurationListener;
 import com.cedarstudios.cedarmapssdk.model.routing.GeoRouting;
 import com.cedarstudios.cedarmapssdk.model.routing.Route;
-import com.mapbox.mapboxsdk.annotations.PolylineOptions;
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory;
 import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.mapboxsdk.geometry.LatLngBounds;
@@ -91,6 +87,7 @@ public class DirectionFragment extends Fragment {
 
             CedarMapsStyleConfigurator.configure(
                     CedarMapsStyle.VECTOR_LIGHT, new OnStyleConfigurationListener() {
+                        @SuppressWarnings("ConstantConditions")
                         @Override
                         public void onSuccess(Style.Builder styleBuilder) {
                             mapboxMap.setStyle(styleBuilder, style -> {
@@ -134,18 +131,26 @@ public class DirectionFragment extends Fragment {
                     @Override
                     public void onSuccess(@NonNull GeoRouting result) {
                         progressBar.clearAnimation();
-
+                        if (result.getRoutes() == null) {
+                            return;
+                        }
                         Route route = result.getRoutes().get(0);
                         Double distance = route.getDistance();
+                        if (distance == null) {
+                            return;
+                        }
                         if (distance > 1000) {
                             distance = distance / 1000.0;
                             distance = (double)Math.round(distance * 100d) / 100d;
-                            distanceTextView.setText("" + distance + " Km");
+                            distanceTextView.setText(String.format("%s Km", distance));
                         } else  {
                             distance = (double)Math.round(distance);
-                            distanceTextView.setText("" + distance + "m");
+                            distanceTextView.setText(String.format("%sm", distance));
                         }
 
+                        if (route.getGeometry() == null || route.getGeometry().getCoordinates() == null) {
+                            return;
+                        }
                         ArrayList<LatLng> coordinates = new ArrayList<>(route.getGeometry().getCoordinates());
 
                         drawCoordinatesInBound(coordinates, route.getBoundingBox());

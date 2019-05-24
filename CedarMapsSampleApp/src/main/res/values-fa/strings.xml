@@ -5,13 +5,7 @@
     <string name="title_forward">جستجو</string>
     <string name="title_direction">مسیریابی</string>
     <string name="title_static">استاتیک</string>
-
-    <string name="no_results">متأسفانه نتیجه‌ای یافت نشد</string>
-    <string name="unknown_error">خطایی پیش آمد</string>
     <string name="parse_error">خطای پردازش نتیجه</string>
-    <string name="searching">در حال جستجو …</string>
-
-    <string name="search_for">جستجو …</string>
     <string name="latitude">عرض جغرافیایی: </string>
     <string name="longitude">طول جغرافیایی: </string>
     <string name="zoom">زوم: </string>
@@ -29,5 +23,4 @@
     <string name="province">استان</string>
     <string name="comma">،</string>
     <string name="location_is_needed_to_function">نرم‌افزار برای عملکرد این ویژگی به موقعیت مکانی نیاز دارد</string>
-    <string name="error_preparing_tiles">خطا در آماده‌سازی نقشه</string>
 </resources>

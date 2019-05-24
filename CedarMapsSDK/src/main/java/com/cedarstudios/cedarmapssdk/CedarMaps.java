@@ -40,6 +40,7 @@ import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 
+@SuppressWarnings({"WeakerAccess", "UnusedReturnValue"})
 public final class CedarMaps {
 
     //region Properties
@@ -388,6 +389,9 @@ public final class CedarMaps {
         StringBuilder pairs = new StringBuilder();
         String delimiter = "";
         for (Pair<LatLng, LatLng> locationPair : coordinatePairs) {
+            if (locationPair.first == null || locationPair.second == null) {
+                continue;
+            }
             pairs.append(delimiter).append(String.format(Locale.ENGLISH, "%1$s,%2$s;%3$s,%4$s", locationPair.first.getLatitude(),
                     locationPair.first.getLongitude(), locationPair.second.getLatitude(), locationPair.second.getLongitude()));
             delimiter = "/";
@@ -487,6 +491,9 @@ public final class CedarMaps {
         StringBuilder pairs = new StringBuilder();
         String delimiter = "";
         for (Pair<LatLng, LatLng> locationPair : coordinatePairs) {
+            if (locationPair.first == null || locationPair.second == null) {
+                continue;
+            }
             pairs.append(delimiter).append(String.format(Locale.ENGLISH, "%1$s,%2$s;%3$s,%4$s", locationPair.first.getLatitude(),
                     locationPair.first.getLongitude(), locationPair.second.getLatitude(), locationPair.second.getLongitude()));
             delimiter = "/";

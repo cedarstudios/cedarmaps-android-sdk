@@ -5,13 +5,7 @@
     <string name="title_forward">Search</string>
     <string name="title_direction">Direction</string>
     <string name="title_static">Static</string>
-
-    <string name="no_results">Nothing found</string>
-    <string name="unknown_error">Unknown Error</string>
     <string name="parse_error">Parsing Error</string>
-    <string name="searching">Searching …</string>
-
-    <string name="search_for">Search</string>
     <string name="latitude">Latitude: </string>
     <string name="longitude">Longitude: </string>
     <string name="zoom">Zoom: </string>
@@ -32,5 +26,4 @@
     <string name="longitude_example" translatable="false">51.3572</string>
     <string name="zoom_example" translatable="false">13</string>
     <string name="location_is_needed_to_function">App needs location to function</string>
-    <string name="error_preparing_tiles">Error in preparing map tiles</string>
 </resources>

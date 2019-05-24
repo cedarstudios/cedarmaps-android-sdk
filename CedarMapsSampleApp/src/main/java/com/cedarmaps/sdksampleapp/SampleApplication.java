@@ -5,6 +5,7 @@ import android.app.Application;
 import com.cedarstudios.cedarmapssdk.CedarMaps;
 import com.cedarstudios.cedarmapssdk.model.MapID;
 
+@SuppressWarnings("WeakerAccess")
 public class SampleApplication extends Application {
 
     @Override
