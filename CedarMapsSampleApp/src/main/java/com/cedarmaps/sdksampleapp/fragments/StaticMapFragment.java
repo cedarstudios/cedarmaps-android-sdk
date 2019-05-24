@@ -1,6 +1,5 @@
 package com.cedarmaps.sdksampleapp.fragments;
 
-
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -22,8 +21,8 @@ import android.widget.Toast;
 
 import com.cedarmaps.sdksampleapp.R;
 import com.cedarstudios.cedarmapssdk.CedarMaps;
-import com.cedarstudios.cedarmapssdk.Dimension;
 import com.cedarstudios.cedarmapssdk.listeners.StaticMapImageResultListener;
+import com.cedarstudios.cedarmapssdk.model.StaticMarker;
 import com.mapbox.mapboxsdk.geometry.LatLng;
 
 import java.util.ArrayList;
@@ -76,11 +75,11 @@ public class StaticMapFragment extends Fragment {
             howToTextView.setVisibility(View.INVISIBLE);
 
             LatLng coordinate = new LatLng(Double.parseDouble(latitude.getText().toString()), Double.parseDouble(longitude.getText().toString()));
-            ArrayList<CedarMaps.StaticMarker> markers = new ArrayList<>();
-            markers.add(new CedarMaps.StaticMarker(coordinate, null));
+            ArrayList<StaticMarker> markers = new ArrayList<>();
+            markers.add(new StaticMarker(coordinate, null));
 
             CedarMaps.getInstance().staticMap(
-                    new Dimension(mapImageView.getWidth(), mapImageView.getHeight()),
+                    mapImageView.getWidth(), mapImageView.getHeight(),
                     Integer.parseInt(zoomLevel.getText().toString()),
                     coordinate,
                     markers,

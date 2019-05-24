@@ -1,11 +1,13 @@
 package com.cedarmaps.sdksampleapp.fragments;
 
 
+import android.content.res.Resources;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
+import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -19,33 +21,44 @@ import android.widget.Toast;
 
 import com.cedarmaps.sdksampleapp.R;
 import com.cedarstudios.cedarmapssdk.CedarMaps;
-import com.cedarstudios.cedarmapssdk.mapbox.MapView;
+import com.cedarstudios.cedarmapssdk.CedarMapsStyle;
+import com.cedarstudios.cedarmapssdk.CedarMapsStyleConfigurator;
+import com.cedarstudios.cedarmapssdk.MapView;
 import com.cedarstudios.cedarmapssdk.listeners.GeoRoutingResultListener;
+import com.cedarstudios.cedarmapssdk.listeners.OnStyleConfigurationListener;
 import com.cedarstudios.cedarmapssdk.model.routing.GeoRouting;
 import com.cedarstudios.cedarmapssdk.model.routing.Route;
-import com.mapbox.mapboxsdk.annotations.IconFactory;
-import com.mapbox.mapboxsdk.annotations.Marker;
-import com.mapbox.mapboxsdk.annotations.MarkerOptions;
 import com.mapbox.mapboxsdk.annotations.PolylineOptions;
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory;
 import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.mapboxsdk.geometry.LatLngBounds;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
+import com.mapbox.mapboxsdk.maps.Style;
+import com.mapbox.mapboxsdk.plugins.annotation.LineManager;
+import com.mapbox.mapboxsdk.plugins.annotation.LineOptions;
+import com.mapbox.mapboxsdk.plugins.annotation.Symbol;
+import com.mapbox.mapboxsdk.plugins.annotation.SymbolManager;
+import com.mapbox.mapboxsdk.plugins.annotation.SymbolOptions;
+import com.mapbox.mapboxsdk.utils.ColorUtils;
 
 import java.util.ArrayList;
 
 public class DirectionFragment extends Fragment {
 
+    private static final String DEPARTURE_IMAGE = "DEPARTURE_IMAGE";
+    private static final String DESTINATION_IMAGE = "DESTINATION_IMAGE";
+
     private MapView mMapView;
     private MapboxMap mMapboxMap;
-    private Button resetButton;
     private LinearLayout hintLayout;
     private LinearLayout resultLayout;
     private ProgressBar progressBar;
     private TextView hintTextView;
     private TextView distanceTextView;
+    private SymbolManager symbolManager;
+    private LineManager lineManager;
 
-    private ArrayList<Marker> markers = new ArrayList<Marker>();
+    private ArrayList<Symbol> symbols = new ArrayList<>();
 
     public DirectionFragment() {
         // Required empty public constructor
@@ -63,37 +76,47 @@ public class DirectionFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         mMapView = view.findViewById(R.id.mapView);
-        resetButton = view.findViewById(R.id.direction_reset_button);
         hintLayout = view.findViewById(R.id.direction_hint_layout);
         resultLayout = view.findViewById(R.id.direction_result_layout);
         progressBar = view.findViewById(R.id.direction_progress_bar);
         hintTextView = view.findViewById(R.id.direction_hint_text_view);
         distanceTextView = view.findViewById(R.id.direction_distance_text_view);
 
-        resetButton.setOnClickListener(v -> {
-            mMapboxMap.clear();
-            markers.clear();
-
-            resultLayout.setVisibility(View.GONE);
-            progressBar.setVisibility(View.GONE);
-            hintTextView.setVisibility(View.VISIBLE);
-            hintLayout.setVisibility(View.VISIBLE);
-        });
+        view.findViewById(R.id.direction_reset_button).setOnClickListener(v -> resetToInitialState());
 
         mMapView.onCreate(savedInstanceState);
 
         mMapView.getMapAsync(mapboxMap -> {
             mMapboxMap = mapboxMap;
 
+            CedarMapsStyleConfigurator.configure(
+                    CedarMapsStyle.VECTOR_LIGHT, new OnStyleConfigurationListener() {
+                        @Override
+                        public void onSuccess(Style.Builder styleBuilder) {
+                            mapboxMap.setStyle(styleBuilder, style -> {
+                                style.addImage(DEPARTURE_IMAGE, ContextCompat.getDrawable(getContext(), R.drawable.cedarmaps_marker_icon_start));
+                                style.addImage(DESTINATION_IMAGE, ContextCompat.getDrawable(getContext(), R.drawable.cedarmaps_marker_icon_end));
+                                symbolManager = new SymbolManager(mMapView, mMapboxMap, style);
+
+                                lineManager = new LineManager(mMapView, mMapboxMap, style);
+                            });
+                        }
+
+                        @Override
+                        public void onFailure(@NonNull String errorMessage) {
+                            Toast.makeText(getContext(), errorMessage, Toast.LENGTH_SHORT).show();
+                        }
+                    });
+
             mMapboxMap.setMaxZoomPreference(17);
             mMapboxMap.setMinZoomPreference(6);
 
             mMapboxMap.addOnMapClickListener(latLng -> {
-                if (markers.size() == 0) {
-                    addMarkerToMapViewAtPosition(latLng, R.drawable.cedarmaps_marker_icon_start);
-                } else if (markers.size() == 1) {
-                    addMarkerToMapViewAtPosition(latLng, R.drawable.cedarmaps_marker_icon_end);
-                    computeDirection(markers.get(0).getPosition(), markers.get(1).getPosition());
+                if (symbols.size() == 0) {
+                    addMarkerToMapViewAtPosition(latLng, DEPARTURE_IMAGE);
+                } else if (symbols.size() == 1) {
+                    addMarkerToMapViewAtPosition(latLng, DESTINATION_IMAGE);
+                    computeDirection(symbols.get(0).getLatLng(), symbols.get(1).getLatLng());
                 }
                 return true;
             });
@@ -123,10 +146,7 @@ public class DirectionFragment extends Fragment {
                             distanceTextView.setText("" + distance + "m");
                         }
 
-                        ArrayList<LatLng> coordinates = new ArrayList<LatLng>();
-                        for (int i = 0; i < route.getGeometry().getCoordinates().size(); i++) {
-                            coordinates.add(route.getGeometry().getCoordinates().get(i));
-                        }
+                        ArrayList<LatLng> coordinates = new ArrayList<>(route.getGeometry().getCoordinates());
 
                         drawCoordinatesInBound(coordinates, route.getBoundingBox());
 
@@ -149,18 +169,20 @@ public class DirectionFragment extends Fragment {
         if (mMapboxMap == null || getContext() == null) {
             return;
         }
-        mMapboxMap.addPolyline(new PolylineOptions()
-                .addAll(coordinates)
-                .color(ContextCompat.getColor(getContext(), R.color.colorPrimary))
-                .width(6)
-                .alpha((float) 0.9));
+        LineOptions options = new LineOptions()
+                .withLatLngs(coordinates)
+                .withLineWidth(6f)
+                .withLineColor(ColorUtils.colorToRgbaString(ContextCompat.getColor(getContext(), R.color.colorPrimary)))
+                .withLineOpacity(0.9f);
+        lineManager.create(options);
 
         mMapboxMap.easeCamera(CameraUpdateFactory.newLatLngBounds(bounds, 150), 1000);
     }
 
     private void resetToInitialState() {
-        mMapboxMap.clear();
-        markers.clear();
+        symbolManager.deleteAll();
+        lineManager.deleteAll();
+        symbols.clear();
 
         resultLayout.setVisibility(View.GONE);
         progressBar.setVisibility(View.GONE);
@@ -168,13 +190,13 @@ public class DirectionFragment extends Fragment {
         hintLayout.setVisibility(View.VISIBLE);
     }
 
-    private void addMarkerToMapViewAtPosition(LatLng coordinate, int markerImageID) {
+    private void addMarkerToMapViewAtPosition(LatLng coordinate, String imageName) {
         if (mMapboxMap != null && getContext() != null) {
-            Marker marker = mMapboxMap.addMarker(new MarkerOptions()
-                    .position(coordinate)
-                    .icon(IconFactory.getInstance(getContext()).fromResource(markerImageID))
-            );
-            markers.add(marker);
+            SymbolOptions options = new SymbolOptions()
+                    .withLatLng(coordinate)
+                    .withIconOffset(new Float[]{0f, -22f})
+                    .withIconImage(imageName);
+            symbols.add(symbolManager.create(options));
         }
     }
 
@@ -218,6 +240,9 @@ public class DirectionFragment extends Fragment {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+        if (symbolManager != null) {
+            symbolManager.onDestroy();
+        }
         mMapView.onDestroy();
     }
 

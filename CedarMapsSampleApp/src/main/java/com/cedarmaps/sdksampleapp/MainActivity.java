@@ -14,7 +14,9 @@ import com.cedarmaps.sdksampleapp.fragments.ForwardGeocodeFragment;
 import com.cedarmaps.sdksampleapp.fragments.MapFragment;
 import com.cedarmaps.sdksampleapp.fragments.ReverseGeocodeFragment;
 import com.cedarmaps.sdksampleapp.fragments.StaticMapFragment;
+import com.mapbox.android.core.permissions.PermissionsListener;
 
+import java.util.List;
 import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener {
@@ -67,5 +69,20 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         }
 
         return false;
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        List allFragments = getSupportFragmentManager().getFragments();
+        if (allFragments.isEmpty()) {
+            return;
+        }
+        Fragment currentFragment = (Fragment) allFragments.get(allFragments.size() - 1);
+        if (currentFragment instanceof PermissionsListener) {
+            currentFragment.onRequestPermissionsResult(requestCode, permissions, grantResults);
+            return;
+        }
+
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 }

@@ -18,10 +18,10 @@ import android.widget.Toast;
 import com.cedarmaps.sdksampleapp.R;
 import com.cedarstudios.cedarmapssdk.CedarMaps;
 import com.cedarstudios.cedarmapssdk.listeners.OnStyleConfigurationListener;
-import com.cedarstudios.cedarmapssdk.mapbox.MapView;
+import com.cedarstudios.cedarmapssdk.MapView;
 import com.cedarstudios.cedarmapssdk.listeners.ReverseGeocodeResultListener;
-import com.cedarstudios.cedarmapssdk.mapbox.Style;
-import com.cedarstudios.cedarmapssdk.mapbox.StyleConfigurator;
+import com.cedarstudios.cedarmapssdk.CedarMapsStyle;
+import com.cedarstudios.cedarmapssdk.CedarMapsStyleConfigurator;
 import com.cedarstudios.cedarmapssdk.model.geocoder.reverse.ReverseGeocode;
 import com.mapbox.mapboxsdk.camera.CameraPosition;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
@@ -57,7 +57,7 @@ public class ReverseGeocodeFragment extends Fragment {
         mMapView.getMapAsync(mapboxMap -> {
             mMapboxMap = mapboxMap;
 
-            StyleConfigurator.configure(Style.VECTOR_DARK, new OnStyleConfigurationListener() {
+            CedarMapsStyleConfigurator.configure(CedarMapsStyle.VECTOR_DARK, new OnStyleConfigurationListener() {
                 @Override
                 public void onSuccess(com.mapbox.mapboxsdk.maps.Style.Builder styleBuilder) {
                     mapboxMap.setStyle(styleBuilder);
