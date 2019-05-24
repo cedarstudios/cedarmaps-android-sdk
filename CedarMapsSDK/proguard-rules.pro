@@ -1,6 +1,6 @@
 # Add project specific ProGuard rules here.
 # By default, the flags in this file are appended to flags specified
-# in I:/Reza/Programming/Android/android-sdk/tools/proguard/proguard-android.txt
+# in ~/Library/Android/sdk/tools/proguard/proguard-android.txt
 # You can edit the include path and order by changing the proguardFiles
 # directive in build.gradle.
 #
@@ -15,3 +15,15 @@
 #-keepclassmembers class fqcn.of.javascript.interface.for.webview {
 #   public *;
 #}
+
+# okhttp3
+-dontwarn okhttp3.**
+
+# gson
+-keepattributes Signature
+-keepattributes *Annotation*
+-dontwarn sun.misc.**
+## Prevent R8 from leaving Data object members always null
+-keepclassmembers,allowobfuscation class * {
+  @com.google.gson.annotations.SerializedName <fields>;
+}
