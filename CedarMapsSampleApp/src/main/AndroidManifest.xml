@@ -10,7 +10,7 @@
         android:allowClearUserData="true"
         android:appCategory="maps"
         android:allowBackup="false"
-        android:name=".SampleApp"
+        android:name=".SampleApplication"
         android:icon="@mipmap/ic_launcher"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:label="@string/app_name"

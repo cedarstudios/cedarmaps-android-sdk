@@ -2,7 +2,7 @@
 
 This guide will take you through the process of integrating CedarMaps into your Android application.
 
-All the mentioned methods and tools in this document are tested on Android Studio v3.2.1.
+All the mentioned methods and tools in this document have been tested on Android Studio v3.4.1.
 
 ## Table of Contents
 - [Installation](#installation)
@@ -38,7 +38,7 @@ Then, add this to the `build.gradle` of your **app** module:
 
 ```groovy
 dependencies {
-    implementation 'com.cedarmaps:CedarMapsSDK:3.2.0'
+    implementation 'com.cedarmaps:CedarMapsSDK:4.0.0'
 }
 ```
 
@@ -46,14 +46,12 @@ dependencies {
 
 You may receive an error forcing you to use a minimum API version of N. This section will help you with that.
 
-If you're using an Android Studio version that is 3.1.0 or above, you can ignore this section because the new dex compiler D8 will be enabled by default. If you are not using the new dex compiler D8, you should follow this section.
-
-The Mapbox Maps SDK for Android introduces the use of Java 8. To fix any Java versioning issues, ensure that you are using Gradle version of 3.0 or greater. Once you’ve done that, add the following compileOptions to the android section of your app-level build.gradle file like so:
+The Mapbox Maps SDK for Android introduces the use of Java 8. To fix any Java versioning issues, ensure that you are using Gradle version of 3.0 or greater. Once you’ve done that, add the following `compileOptions` to the android section of your **app**-level `build.gradle` file like so:
 
 ```groovy
 android {
-  ...
-  compileOptions {
+    ...
+    compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
@@ -67,7 +65,7 @@ Make sure your app can access internet by adding this to `AndroidManifest.xml`:
 <uses-permission android:name="android.permission.INTERNET"/>
 ```
 
-If your App needs to access location services, add the following as well:
+If your app needs to access location services, add the following as well:
 
 ```xml
 <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
@@ -77,7 +75,8 @@ On Android 6.0 and up, you have to check for "dangerous" permissions at runtime.
 
 ### Configuring CedarMaps
 
-In order to use CedarMaps API, you should set your `clientID`, `clientSecret` and a `context` in your application.
+In order to use CedarMaps, you should set your `clientID`, `clientSecret` and a `context` in your application.
+We suggest you do this in your `Application` subclass, in its `onCreate` method.
 
 ```java
 CedarMaps.getInstance()
@@ -97,7 +96,7 @@ CedarMaps.getInstance()
 
 ### Mapbox
 
-CedarMaps SDK is based on [Mapbox GL Android SDK v6.8.0](https://github.com/mapbox/mapbox-gl-native) and provides extra API methods over Mapbox. 
+CedarMaps SDK is based on [Mapbox GL Android SDK v8.0.0](https://github.com/mapbox/mapbox-gl-native) and provides extra API methods over Mapbox. 
 For more information about how to use MapView and other components such as **Adding Markers**, **Showing Current Location**, etc., please see [Mapbox Getting Started](https://www.mapbox.com/help/first-steps-android-sdk/).
 
 #### MapView
@@ -108,22 +107,6 @@ like any other `ViewGroup` and its behavior can be changed statically with an
 file, or programmatically during runtime.
 
 Pay attention to the package when importing. **CedarMaps** `MapView` extends **Mapbox** `MapView` and they shall not be used interchangeably.
-
-If you want to show map tiles, first call the following snippet before using any `MapView` instance or inflating any layouts using this object.
-
-```java
-CedarMaps.getInstance().prepareTiles(new OnTilesConfigured() {
-            @Override
-            public void onSuccess() {
-
-            }
-
-            @Override
-            public void onFailure(@NonNull String error) {
-
-            }
-        });
-```
 
 ##### XML layout
 To add the CedarMaps `MapView` as a layout element, add the following to your xml file:
@@ -138,7 +121,21 @@ To add the CedarMaps `MapView` as a layout element, add the following to your xm
         />
 ```
 
-And then you can call methods on it programmatically;
+##### Setting Map Style
+
+In your fragment or activity class, where you want to use `MapView`, 
+you need to set your desired style after the `MapboxMap` instance is ready.
+
+Call `getMapAsync` in `onCreate` and wait for the callback.
+
+You should use `CedarMapsStyleConfigurator` to configure a style and then set it on your `MapboxMap` instance.
+
+You can choose between 3 different styles:
+* `VECTOR_LIGHT`
+* `VECTOR_DARK`
+* `RASTER_DARK`
+
+Using **Vector** styles is recommended.
 
 ```java
 mMapView = (MapView) view.findViewById(R.id.mapView);
@@ -148,32 +145,38 @@ mMapView.getMapAsync(new OnMapReadyCallback() {
     public void onMapReady(MapboxMap mapboxMap) {
         mMapboxMap = mapboxMap;
 
+        CedarMapsStyleConfigurator.configure(
+                CedarMapsStyle.VECTOR_LIGHT, new OnStyleConfigurationListener() {
+                    @Override
+                    public void onSuccess(Style.Builder styleBuilder) {
+                        mapboxMap.setStyle(styleBuilder);
+                    }
+
+                    @Override
+                    public void onFailure(@NonNull String errorMessage) {
+                        Log.e(TAG, errorMessage);
+                    }
+                });
+
         mMapboxMap.setMaxZoomPreference(17);
         mMapboxMap.setMinZoomPreference(6);
 
-        MapboxMap.OnMapClickListener() {
-            @Override
-            public void onMapClick(@NonNull LatLng latLng) {
-
-            }
+        mMapboxMap.addOnMapClickListener(point -> {
+            Log.i(TAG, "Tapped on map");
+            return true;
         });
     }
 });
 ```
 
-##### Changing Map Style
+### Plugins
 
-You can set various style URLs to instances of `MapView`:
+Mapbox Plugins build on top of the Maps SDK providing extra features in lightweight dependencies.
+There are lots of plugins which you could check them out [here](https://docs.mapbox.com/android/plugins/overview/).
 
-```java
-mMapView.setStyleUrl("STYLE_URL");
-
-// Light Vector (Default): "https://api.cedarmaps.com/v1/styles/cedarmaps.light.json"
-// Dark Vector: "https://api.cedarmaps.com/v1/styles/cedarmaps.dark.json"
-// Raster: "https://api.cedarmaps.com/v1/tiles/light.json"
-```
-Make sure to use your base URL if you have one.
-
+We believe using the [Annotation Plugin](https://docs.mapbox.com/android/plugins/overview/annotation/) 
+will help you a lot in adding custom markers and symbols onto your map. Many examples are also included in both Mapbox documentations page
+or our included Sample App.
 
 ### APK Size
 
@@ -186,9 +189,9 @@ You can find APK splitting configurations in Sample App `build.gradle` as well.
 ## API Methods
 In addition to using MapView, you can use CedarMaps API to retrieve location based data and street search.
 
-All API calls are asynchronous; they don't block the UiThread. The completion handlers are all called on the UiThread.
+All API calls are asynchronous; they don't block the thread on which they're called. The completion handlers are all called on the `UiThread`.
 
-You can also consult [CedarMaps.java](http://gitlab.cedar.ir/cedar.studios/cedarmaps-sdk-android-public/blob/master/CedarMapsSDK/src/main/java/com/cedarstudios/cedarmapssdk/CedarMaps.java) for detailed info on all of our methods. Some of the main methods are mentioned below.
+You can also consult [CedarMaps.java](https://github.com/cedarstudios/cedarmaps-android-sdk/blob/master/CedarMapsSDK/src/main/java/com/cedarstudios/cedarmapssdk/CedarMaps.java) for detailed info on all of our methods. Some of the main methods are mentioned below.
 
 ### Forward Geocoding
 
@@ -209,7 +212,7 @@ CedarMaps.getInstance().forwardGeocode(query, new ForwardGeocodeResultsListener(
 });
 ```
 
-More advanced street searches are available in the sample app.
+More advanced street searches are available in the Sample App.
 
 ### Reverse Geocoding
 
@@ -278,7 +281,7 @@ It automatically considers the screen density of the device on which it's being 
 You can optionally specify marker positions to draw on the image.
 
 ```java
-CedarMaps.getInstance().staticMap(dimension, zoomLevel, centerPoint, markers, 
+CedarMaps.getInstance().staticMap(width, height, zoomLevel, centerPoint, markers, 
 	new StaticMapImageResultListener() {
 		@Override
 		public void onSuccess(@NonNull Bitmap bitmap) {

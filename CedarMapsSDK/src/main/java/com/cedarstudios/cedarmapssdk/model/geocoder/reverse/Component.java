@@ -10,6 +10,7 @@ import java.io.Serializable;
 /**
  * Detailed components of a Reverse Geocode request
  */
+@SuppressWarnings("WeakerAccess")
 public class Component implements Serializable
 {
     @SerializedName("long_name")

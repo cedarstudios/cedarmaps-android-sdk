@@ -126,7 +126,7 @@ public class ForwardGeocode implements Serializable
      * @return English alternate name of the result. e.g. Niayesh, Hashemi Rafsanjani
      */
     @Nullable
-    public String getEnglishlternateName() {
+    public String getEnglishAlternateName() {
         return alternateNameEn;
     }
 

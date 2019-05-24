@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.Looper;
@@ -17,9 +16,11 @@ import android.util.DisplayMetrics;
 import com.cedarstudios.cedarmapssdk.listeners.AccessTokenListener;
 import com.cedarstudios.cedarmapssdk.listeners.ForwardGeocodeResultsListener;
 import com.cedarstudios.cedarmapssdk.listeners.GeoRoutingResultListener;
-import com.cedarstudios.cedarmapssdk.listeners.OnTilesConfigured;
 import com.cedarstudios.cedarmapssdk.listeners.ReverseGeocodeResultListener;
 import com.cedarstudios.cedarmapssdk.listeners.StaticMapImageResultListener;
+import com.cedarstudios.cedarmapssdk.model.DirectionID;
+import com.cedarstudios.cedarmapssdk.model.MapID;
+import com.cedarstudios.cedarmapssdk.model.StaticMarker;
 import com.cedarstudios.cedarmapssdk.model.geocoder.forward.ForwardGeocodeResponse;
 import com.cedarstudios.cedarmapssdk.model.geocoder.reverse.ReverseGeocodeResponse;
 import com.cedarstudios.cedarmapssdk.model.routing.GeoRoutingResponse;
@@ -39,16 +40,12 @@ import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 
-public class CedarMaps {
-
-    //region Constants
-    private static final String defaultMapID = "cedarmaps.streets";
-    private static final String defaultDirectionID = "cedarmaps.driving";
-    //endregion
+@SuppressWarnings({"WeakerAccess", "UnusedReturnValue"})
+public final class CedarMaps {
 
     //region Properties
-    private String mMapID;
-    private String mDirectionID;
+    private MapID mapID;
+    private DirectionID directionID;
     private static CedarMaps instance;
     private AuthenticationManager authManager = AuthenticationManager.getInstance();
     //endregion
@@ -62,39 +59,37 @@ public class CedarMaps {
     }
 
     private CedarMaps() {
-        mMapID = defaultMapID;
-        mDirectionID = defaultDirectionID;
-    }
-
-    /**
-     * Preparing Tiles for using in a mapView.
-     * Make sure to call setClientID , setClientSecret and setContext before calling this method.
-     * @param completionHandler The handler to notify when preparing tiles was finished with success or error.
-     */
-    public void prepareTiles(OnTilesConfigured completionHandler) {
-        TileConfigurator.prepare(completionHandler);
+        mapID = MapID.STREETS;
+        directionID = DirectionID.DRIVING;
     }
     //endregion
 
 
     //region Setters & Getters
-    String getMapID() {
-        return mMapID;
+
+    /**
+     * @return MapID of current configuration. Possible values are "MapID.STREETS" and "MapID.MIX".
+     */
+    @NonNull
+    public MapID getMapID() {
+        return mapID;
     }
 
     /**
-     * This method specifies the result types when using Geocoding APIs. Possible values are "cedarmaps.streets" and "cedarmaps.mix"
+     * This method specifies the result types when using Geocoding APIs. Possible values are "MapID.STREETS" and "MapID.MIX"
      * @param mapID The map ID
+     * @return CedarMaps singleton object
      */
-    public void setMapID(String mapID) {
-        this.mMapID = mapID;
+    public CedarMaps setMapID(@NonNull MapID mapID) {
+        this.mapID = mapID;
+        return CedarMaps.getInstance();
     }
 
     /**
      * Setting your clientID for using CedarMaps API.
      * This method should be called during setup before using any of the CedarMaps methods.
      * @param clientID The client ID you received for using CedarMaps SDK.
-     * @return AuthenticationManager singleton object; You could use this to continue setting the other parameters such as clientSecret and context.
+     * @return CedarMaps singleton object; You could use this to continue setting the other parameters such as clientSecret and context.
      */
     public CedarMaps setClientID(@NonNull String clientID) {
         authManager.setClientID(clientID);
@@ -105,7 +100,7 @@ public class CedarMaps {
      * Setting your clientSecret for using CedarMaps API.
      * This method should be called during setup before using any of the CedarMaps methods.
      * @param clientSecret The client secret you received for using CedarMaps SDK.
-     * @return AuthenticationManager singleton object; You could use this to continue setting the other parameters such as context.
+     * @return CedarMaps singleton object; You could use this to continue setting the other parameters such as context.
      */
     public CedarMaps setClientSecret(@NonNull String clientSecret) {
         authManager.setClientSecret(clientSecret);
@@ -118,7 +113,7 @@ public class CedarMaps {
      * @param context You can pass your MainActivity as the context.
      *                We will use applicationContext extracted from what you pass.
      *                This needs to be set only once in the lifetime of your application.
-     * @return AuthenticationManager singleton object.
+     * @return CedarMaps singleton object.
      */
     public CedarMaps setContext(@NonNull Context context) {
         authManager.setContext(context);
@@ -138,7 +133,7 @@ public class CedarMaps {
     }
     //endregion
 
-    public String getSavedAccessToken() throws CedarMapsException {
+    public String getSavedAccessToken() throws Exception {
         return authManager.getSavedAccessToken();
     }
 
@@ -250,7 +245,7 @@ public class CedarMaps {
         }
         String url = String.format(Locale.ENGLISH,
                 authManager.getAPIBaseURL() + "geocode/%s/%s.json",
-                mMapID,
+                mapID.toString(),
                 term);
 
         url += String.format(Locale.ENGLISH, "?limit=%s", limit);
@@ -307,7 +302,7 @@ public class CedarMaps {
     public void reverseGeocode(LatLng coordinate, final ReverseGeocodeResultListener completionHandler) {
         String url = String.format(Locale.ENGLISH,
                 authManager.getAPIBaseURL() + "geocode/%1$s/%2$s,%3$s.json",
-                mMapID,
+                mapID.toString(),
                 coordinate.getLatitude(), coordinate.getLongitude());
 
         getResponseBodyFromURL(url, new NetworkResponseBodyCompletionHandler() {
@@ -350,7 +345,7 @@ public class CedarMaps {
 
         String url = String.format(Locale.ENGLISH,
                 authManager.getAPIBaseURL() + "distance/%1$s/%2$s,%3$s;%4$s,%5$s",
-                mDirectionID,
+                directionID.toString(),
                 start.getLatitude(), start.getLongitude(), end.getLatitude(), end.getLongitude());
 
         getResponseBodyFromURL(url, new NetworkResponseBodyCompletionHandler() {
@@ -394,6 +389,9 @@ public class CedarMaps {
         StringBuilder pairs = new StringBuilder();
         String delimiter = "";
         for (Pair<LatLng, LatLng> locationPair : coordinatePairs) {
+            if (locationPair.first == null || locationPair.second == null) {
+                continue;
+            }
             pairs.append(delimiter).append(String.format(Locale.ENGLISH, "%1$s,%2$s;%3$s,%4$s", locationPair.first.getLatitude(),
                     locationPair.first.getLongitude(), locationPair.second.getLatitude(), locationPair.second.getLongitude()));
             delimiter = "/";
@@ -401,7 +399,7 @@ public class CedarMaps {
 
         String url = String.format(Locale.ENGLISH,
                 authManager.getAPIBaseURL() + "distance/%1$s/%2$s",
-                mDirectionID, pairs.toString());
+                directionID.toString(), pairs.toString());
 
         getResponseBodyFromURL(url, new NetworkResponseBodyCompletionHandler() {
             @Override
@@ -493,6 +491,9 @@ public class CedarMaps {
         StringBuilder pairs = new StringBuilder();
         String delimiter = "";
         for (Pair<LatLng, LatLng> locationPair : coordinatePairs) {
+            if (locationPair.first == null || locationPair.second == null) {
+                continue;
+            }
             pairs.append(delimiter).append(String.format(Locale.ENGLISH, "%1$s,%2$s;%3$s,%4$s", locationPair.first.getLatitude(),
                     locationPair.first.getLongitude(), locationPair.second.getLatitude(), locationPair.second.getLongitude()));
             delimiter = "/";
@@ -500,7 +501,7 @@ public class CedarMaps {
 
         String url = String.format(Locale.ENGLISH,
                 authManager.getAPIBaseURL() + "direction/%1$s/%2$s?instructions=%3$s&locale=%4$s",
-                mDirectionID,
+                directionID.toString(),
                 pairs.toString(),
                 shouldShowInstructions ? "true" : "false",
                 locale.getLanguage().contains("fa") ? "fa" : "en"
@@ -538,39 +539,40 @@ public class CedarMaps {
     /**
      * This method creates a static image of map for the entered location.
      *
-     * @param dimension The wrapper for the width and height of the required image. The width and height should be specified in pixels. (not dp)
+     * @param width Width of the required image in pixels. (not dp)
+     * @param height Height of the required image in pixels. (not dp)
      * @param zoomLevel An integer for the required zoom level. Valid from 6 to 17.
      * @param centerPoint The center of the map in the image. If you pass null, make sure to fill the markers array. The boundary will be automatically set to show all the markers.
      * @param markers An array of StaticMarker objects. The markers will be drawn on the resulting image.
      * @param completionHandler The handler to notify when static image Bitmap is ready with success or error.
      *                          The handler methods are called on UIThread.
      */
-    public void staticMap(@NonNull Dimension dimension, int zoomLevel, @Nullable LatLng centerPoint, @Nullable ArrayList<StaticMarker> markers, final @NonNull StaticMapImageResultListener completionHandler) {
+    public void staticMap(int width, int height, int zoomLevel, @Nullable LatLng centerPoint, @Nullable ArrayList<StaticMarker> markers, final @NonNull StaticMapImageResultListener completionHandler) {
         int validZoomLevel = Math.min(17, Math.max(zoomLevel, 6));
         String paramPosition = centerPoint != null ? String.format(Locale.ENGLISH, "%f,%f,%d", centerPoint.getLatitude(), centerPoint.getLongitude(), validZoomLevel) : "auto";
 
-        String paramDimension = dimension.toStringUsingDp(true);
+        String paramDimension = SizeHelper.stringValueUsingDp(width, height);
 
         String paramScale = "";
         if (Resources.getSystem().getDisplayMetrics().densityDpi > DisplayMetrics.DENSITY_MEDIUM) {
             paramScale = "@2x";
         }
 
-        String paramMarkers = "";
+        StringBuilder paramMarkers = new StringBuilder();
         if (markers != null && markers.size() > 0) {
-            paramMarkers = "?markers=";
+            paramMarkers = new StringBuilder("?markers=");
             for (StaticMarker marker: markers) {
                 String item = String.format(Locale.ENGLISH, "%s|%f,%f|",
-                        marker.markerUri == null ? "marker-default" : marker.markerUri.toString(),
-                        marker.coordinate.getLatitude(),
-                        marker.coordinate.getLongitude());
-                paramMarkers += item;
+                        marker.getMarkerUri() == null ? "marker-default" : marker.getMarkerUri().toString(),
+                        marker.getCoordinate().getLatitude(),
+                        marker.getCoordinate().getLongitude());
+                paramMarkers.append(item);
             }
-            paramMarkers = paramMarkers.substring(0, paramMarkers.length() - 1);
+            paramMarkers = new StringBuilder(paramMarkers.substring(0, paramMarkers.length() - 1));
         }
 
         String url = String.format(Locale.ENGLISH,
-                authManager.getAPIBaseURL() + "static/light/%s/%s%s%s", paramPosition, paramDimension, paramScale, paramMarkers);
+                authManager.getAPIBaseURL() + "static/light/%s/%s%s%s", paramPosition, paramDimension, paramScale, paramMarkers.toString());
 
         getResponseBodyFromURL(url, new NetworkResponseBodyCompletionHandler() {
             @Override
@@ -600,28 +602,6 @@ public class CedarMaps {
         });
     }
 
-    /**
-     * The wrapper class whose instances are used for showing markers on the static map.
-     * @see #staticMap(Dimension, int, LatLng, ArrayList, StaticMapImageResultListener)
-     */
-    public static class StaticMarker {
-        @NonNull
-        private LatLng coordinate;
-
-        @Nullable
-        private Uri markerUri;
-
-        /**
-         *
-         * @param coordinate The coordinate of the marker
-         * @param markerUri The remote address of the image you want to use for the marker
-         */
-        public StaticMarker(@NonNull LatLng coordinate, @Nullable Uri markerUri) {
-            this.coordinate = coordinate;
-            this.markerUri = markerUri;
-        }
-    }
-
     private interface NetworkResponseBodyCompletionHandler {
         void onSuccess(ResponseBody responseBody);
         void onFailure(String errorMessage);
@@ -641,28 +621,33 @@ public class CedarMaps {
 
                 client.newCall(request).enqueue(new Callback() {
                     @Override
-                    public void onResponse(Call call, final Response response) throws IOException {
+                    public void onResponse(Call call, final Response response) {
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-                                if (response.code() == 400) {
-                                    completionHandler.onFailure(new CedarMapsException("Invalid Request. Missing Parameters.", response).getMessage());
-                                } else if (response.code() == 401) {
-                                    try {
-                                        authManager.regenerateAccessToken();
-                                    } catch (CedarMapsException e) {
-                                        e.printStackTrace();
-                                    }
-                                    completionHandler.onFailure(new CedarMapsException("Obtaining Bearer Token Failed.", response).getMessage());
-                                } else if (response.code() == 500) {
-                                    completionHandler.onFailure(new CedarMapsException("Internal Server Error.", response).getMessage());
-                                } else {
-                                    ResponseBody body = response.body();
-                                    if (body == null) {
-                                        completionHandler.onFailure(new CedarMapsException("Response body can't be parsed.", response).getMessage());
-                                    } else {
-                                        completionHandler.onSuccess(body);
-                                    }
+                                switch (response.code()) {
+                                    case 400:
+                                        completionHandler.onFailure(new Exception("Invalid Request. Missing Parameters.").getMessage());
+                                        break;
+                                    case 401:
+                                        try {
+                                            authManager.generateAccessToken();
+                                        } catch (Exception e) {
+                                            e.printStackTrace();
+                                        }
+                                        completionHandler.onFailure(new Exception("Obtaining Bearer Token Failed.").getMessage());
+                                        break;
+                                    case 500:
+                                        completionHandler.onFailure(new Exception("Internal Server Error.").getMessage());
+                                        break;
+                                    default:
+                                        ResponseBody body = response.body();
+                                        if (body == null) {
+                                            completionHandler.onFailure(new Exception("Response body can't be parsed.").getMessage());
+                                        } else {
+                                            completionHandler.onSuccess(body);
+                                        }
+                                        break;
                                 }
                             }
                         });
@@ -673,7 +658,7 @@ public class CedarMaps {
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-                                completionHandler.onFailure(new CedarMapsException(call.toString(), e).getMessage());
+                                completionHandler.onFailure(new Exception(call.toString(), e).getMessage());
                             }
                         });
                     }

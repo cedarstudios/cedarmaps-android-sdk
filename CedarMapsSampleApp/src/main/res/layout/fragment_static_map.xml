@@ -2,7 +2,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@android:color/white"
     tools:context="com.cedarmaps.sdksampleapp.fragments.StaticMapFragment">
 
     <LinearLayout
@@ -26,7 +25,8 @@
                 android:adjustViewBounds="true"
                 android:background="#EEEEEE"
                 android:cropToPadding="true"
-                android:scaleType="fitCenter" />
+                android:scaleType="fitCenter"
+                tools:ignore="ContentDescription" />
             <ProgressBar
                 android:id="@+id/static_map_progress_bar"
                 android:layout_width="wrap_content"
@@ -83,7 +83,7 @@
                         android:layout_height="wrap_content"
                         android:text="@string/latitude_example"
                         android:inputType="numberDecimal"
-                        tools:ignore="LabelFor" />
+                        tools:ignore="Autofill,LabelFor" />
 
                 </LinearLayout>
 
@@ -104,7 +104,7 @@
                         android:layout_height="wrap_content"
                         android:text="@string/longitude_example"
                         android:inputType="numberDecimal"
-                        tools:ignore="LabelFor" />
+                        tools:ignore="Autofill,LabelFor" />
 
                 </LinearLayout>
 
@@ -130,7 +130,7 @@
                     android:hint="@string/zoom_level_hint"
                     android:text="@string/zoom_example"
                     android:inputType="numberDecimal"
-                    />
+                    tools:ignore="Autofill" />
             </LinearLayout>
             <Button
                 android:id="@+id/static_map_create_button"

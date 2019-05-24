@@ -13,11 +13,15 @@ import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 
 import com.cedarmaps.sdksampleapp.R;
 import com.cedarstudios.cedarmapssdk.CedarMaps;
+import com.cedarstudios.cedarmapssdk.listeners.OnStyleConfigurationListener;
 import com.cedarstudios.cedarmapssdk.MapView;
 import com.cedarstudios.cedarmapssdk.listeners.ReverseGeocodeResultListener;
+import com.cedarstudios.cedarmapssdk.CedarMapsStyle;
+import com.cedarstudios.cedarmapssdk.CedarMapsStyleConfigurator;
 import com.cedarstudios.cedarmapssdk.model.geocoder.reverse.ReverseGeocode;
 import com.mapbox.mapboxsdk.camera.CameraPosition;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
@@ -50,10 +54,20 @@ public class ReverseGeocodeFragment extends Fragment {
 
         mMapView.onCreate(savedInstanceState);
 
-        mMapView.setStyleUrl("https://api.cedarmaps.com/v1/styles/cedarmaps.dark.json");
-
         mMapView.getMapAsync(mapboxMap -> {
             mMapboxMap = mapboxMap;
+
+            CedarMapsStyleConfigurator.configure(CedarMapsStyle.VECTOR_DARK, new OnStyleConfigurationListener() {
+                @Override
+                public void onSuccess(com.mapbox.mapboxsdk.maps.Style.Builder styleBuilder) {
+                    mapboxMap.setStyle(styleBuilder);
+                }
+
+                @Override
+                public void onFailure(@NonNull String errorMessage) {
+                    Toast.makeText(getContext(), errorMessage, Toast.LENGTH_SHORT).show();
+                }
+            });
 
             mMapboxMap.setMaxZoomPreference(17);
             mMapboxMap.setMinZoomPreference(6);

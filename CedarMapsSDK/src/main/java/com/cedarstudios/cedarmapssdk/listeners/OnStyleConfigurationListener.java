@@ -2,14 +2,16 @@ package com.cedarstudios.cedarmapssdk.listeners;
 
 import android.support.annotation.NonNull;
 
+import com.mapbox.mapboxsdk.maps.Style;
+
 /**
- * The listener for notifying the result of configuring the CedarMap tiles for using in a MapView.
+ * The listener for notifying the result of generating CedarMaps styles for using in a MapView.
  */
-public interface OnTilesConfigured {
+public interface OnStyleConfigurationListener {
     /**
      * This method is called on UiThread when the tiles are configured successfully.
      */
-    void onSuccess();
+    void onSuccess(Style.Builder styleBuilder);
 
     /**
      * This method is called on UiThread when configuring the tiles is failed.

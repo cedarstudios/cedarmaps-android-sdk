@@ -85,7 +85,7 @@ public class ReverseGeocode implements Serializable {
 
     /**
      * Place name
-     * @return
+     * @return Place name
      */
     @Nullable
     public String getPlace() {

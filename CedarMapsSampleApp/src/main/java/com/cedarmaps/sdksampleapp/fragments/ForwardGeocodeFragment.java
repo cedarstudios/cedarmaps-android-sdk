@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -23,13 +24,18 @@ import android.widget.Toast;
 import com.cedarmaps.sdksampleapp.R;
 import com.cedarmaps.sdksampleapp.SearchViewAdapter;
 import com.cedarstudios.cedarmapssdk.CedarMaps;
+import com.cedarstudios.cedarmapssdk.CedarMapsStyle;
+import com.cedarstudios.cedarmapssdk.CedarMapsStyleConfigurator;
 import com.cedarstudios.cedarmapssdk.MapView;
 import com.cedarstudios.cedarmapssdk.listeners.ForwardGeocodeResultsListener;
+import com.cedarstudios.cedarmapssdk.listeners.OnStyleConfigurationListener;
 import com.cedarstudios.cedarmapssdk.model.geocoder.forward.ForwardGeocode;
-import com.mapbox.mapboxsdk.annotations.Marker;
-import com.mapbox.mapboxsdk.annotations.MarkerOptions;
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
+import com.mapbox.mapboxsdk.maps.Style;
+import com.mapbox.mapboxsdk.plugins.annotation.CircleManager;
+import com.mapbox.mapboxsdk.plugins.annotation.CircleOptions;
+import com.mapbox.mapboxsdk.utils.ColorUtils;
 
 import java.util.List;
 
@@ -42,9 +48,8 @@ public class ForwardGeocodeFragment extends Fragment {
     private RecyclerView mRecyclerView;
     private ProgressBar mProgressBar;
     private LinearLayout mLinearLayout;
-    private LinearLayoutManager mLinearLayoutManager;
-    private DividerItemDecoration mDividerItemDecoration;
     private State state = State.MAP;
+    private CircleManager circleManager;
 
     private enum State {
         MAP,
@@ -84,12 +89,25 @@ public class ForwardGeocodeFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         mMapView = view.findViewById(R.id.mapView);
-        mMapView.setStyleUrl("https://api.cedarmaps.com/v1/tiles/light.json");
         mMapView.onCreate(savedInstanceState);
         mMapView.getMapAsync(mapboxMap -> {
             mMapboxMap = mapboxMap;
 
-            mMapboxMap.setMaxZoomPreference(17);
+            CedarMapsStyleConfigurator.configure(
+                    CedarMapsStyle.RASTER_LIGHT, new OnStyleConfigurationListener() {
+                        @Override
+                        public void onSuccess(Style.Builder styleBuilder) {
+                            mMapboxMap.setStyle(styleBuilder, style ->
+                                    circleManager = new CircleManager(mMapView, mMapboxMap, style));
+                        }
+
+                        @Override
+                        public void onFailure(@NonNull String errorMessage) {
+                            Toast.makeText(getContext(), errorMessage, Toast.LENGTH_SHORT).show();
+                        }
+                    });
+
+            mMapboxMap.setMaxZoomPreference(16);
             mMapboxMap.setMinZoomPreference(6);
         });
 
@@ -97,10 +115,10 @@ public class ForwardGeocodeFragment extends Fragment {
         mLinearLayout = view.findViewById(R.id.search_results_linear_layout);
         mProgressBar = view.findViewById(R.id.search_progress_bar);
 
-        mLinearLayoutManager = new LinearLayoutManager(getActivity());
+        LinearLayoutManager mLinearLayoutManager = new LinearLayoutManager(getActivity());
         mRecyclerView.setLayoutManager(mLinearLayoutManager);
 
-        mDividerItemDecoration = new DividerItemDecoration(mRecyclerView.getContext(), mLinearLayoutManager.getOrientation());
+        DividerItemDecoration mDividerItemDecoration = new DividerItemDecoration(mRecyclerView.getContext(), mLinearLayoutManager.getOrientation());
         mRecyclerView.addItemDecoration(mDividerItemDecoration);
 
         view.setFocusableInTouchMode(true);
@@ -136,7 +154,7 @@ public class ForwardGeocodeFragment extends Fragment {
 
         searchView.setOnQueryTextFocusChangeListener((v, hasFocus) -> {
             if (hasFocus && state == State.MAP_PIN) {
-                mMapboxMap.clear();
+                circleManager.deleteAll();
                 if (!TextUtils.isEmpty(searchView.getQuery())) {
                     setState(State.RESULTS);
                 } else {
@@ -155,7 +173,7 @@ public class ForwardGeocodeFragment extends Fragment {
             public boolean onQueryTextChange(final String newText) {
 
                 if (TextUtils.isEmpty(newText)) {
-                    mMapboxMap.clear();
+                    circleManager.deleteAll();
                     setState(State.MAP);
                 } else {
                     setState(State.SEARCHING);
@@ -186,27 +204,39 @@ public class ForwardGeocodeFragment extends Fragment {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.action_search :
-                return true;
-
-            default:
-                return super.onOptionsItemSelected(item);
+        if (item.getItemId() == R.id.action_search) {
+            return true;
         }
+        return super.onOptionsItemSelected(item);
     }
 
     public void showItemOnMap(final ForwardGeocode item) {
         setState(State.MAP_PIN);
-        mMapboxMap.clear();
+        if (getActivity() == null || item.getLocation().getCenter() == null) {
+            return;
+        }
 
+        circleManager.deleteAll();
         mSearchView.clearFocus();
 
-        final Marker marker = mMapboxMap.addMarker(new MarkerOptions()
-                .position(item.getLocation().getCenter())
-                .title(item.getName())
-                .snippet(item.getAddress())
-        );
-        mMapboxMap.selectMarker(marker);
+        int color = ContextCompat.getColor(getActivity(), R.color.colorPrimary);
+        int strokeColor = ContextCompat.getColor(getActivity(), R.color.colorAccent);
+        CircleOptions circleOptions = new CircleOptions()
+                .withLatLng(item.getLocation().getCenter())
+                .withCircleColor(ColorUtils.colorToRgbaString(color))
+                .withCircleStrokeWidth(4f)
+                .withCircleStrokeColor(ColorUtils.colorToRgbaString(strokeColor))
+                .withCircleBlur(0.5f)
+                .withCircleRadius(12f);
+        circleManager.create(circleOptions);
+
+        circleManager.addClickListener(circle -> {
+            if (!TextUtils.isEmpty(item.getAddress())) {
+                Toast.makeText(getContext(), item.getAddress(), Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(getContext(), item.getName(), Toast.LENGTH_SHORT).show();
+            }
+        });
 
         if (item.getLocation().getCenter() != null) {
             mMapboxMap.easeCamera(CameraUpdateFactory.newLatLng(item.getLocation().getCenter()), 1000);
@@ -253,6 +283,9 @@ public class ForwardGeocodeFragment extends Fragment {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+        if (circleManager != null) {
+            circleManager.onDestroy();
+        }
         mMapView.onDestroy();
     }
 

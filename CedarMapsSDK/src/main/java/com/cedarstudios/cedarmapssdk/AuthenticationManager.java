@@ -1,16 +1,12 @@
 package com.cedarstudios.cedarmapssdk;
 
 import android.annotation.SuppressLint;
-import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v4.content.LocalBroadcastManager;
 import android.text.TextUtils;
 
 import com.cedarstudios.cedarmapssdk.listeners.AccessTokenListener;
@@ -31,14 +27,12 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 
-import static com.mapbox.mapboxsdk.constants.MapboxConstants.INTENT_FILTER_TILE_HTTP_CODE_401;
-
 final class AuthenticationManager {
-
-    static final String ACCESS_TOKEN_READY_INTENT = "ACCESS_TOKEN_READY_INTENT";
 
     private static final String defaultBaseURL = "https://api.cedarmaps.com/v1/";
     private static final String SAVED_ACCESS_TOKEN_KEY = "com.cedarstudios.cedarmapssdk.saved_access_token";
+    @SuppressWarnings("SpellCheckingInspection")
+    private static final String INITIAL_TOKEN = "pk.spamradecrofnekotxobpamekafasisiht";
 
     @SuppressLint("StaticFieldLeak")
     private static AuthenticationManager instance;
@@ -52,22 +46,12 @@ final class AuthenticationManager {
     private Context mContext = null;
 
     private boolean isFetchingNewAccessToken = false;
-    private BroadcastReceiver mapViewError401BroadcastReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            try {
-                regenerateAccessToken();
-            } catch (CedarMapsException e) {
-                e.printStackTrace();
-            }
-        }
-    };
 
     private AuthenticationManager() {
         mBaseURL = defaultBaseURL;
     }
 
-    public static AuthenticationManager getInstance() {
+    static AuthenticationManager getInstance() {
         if (instance == null) {
             instance = new AuthenticationManager();
         }
@@ -77,12 +61,22 @@ final class AuthenticationManager {
     void setClientID(@NonNull String clientID) {
         if (!clientID.equals(mClientID)) {
             mClientID = clientID;
+            generateAccessToken();
         }
     }
 
     void setClientSecret(@NonNull String clientSecret) {
         if (!clientSecret.equals(mClientSecret)) {
             mClientSecret = clientSecret;
+            generateAccessToken();
+        }
+    }
+
+    void setContext(@NonNull Context context) {
+        if (mContext == null) {
+            mContext = context.getApplicationContext();
+            Mapbox.getInstance(mContext, INITIAL_TOKEN);
+            generateAccessToken();
         }
     }
 
@@ -108,7 +102,7 @@ final class AuthenticationManager {
                         }
                     });
                 }
-            } catch (final CedarMapsException e) {
+            } catch (final Exception e) {
                 if (completionHandler == null) {
                     return;
                 }
@@ -133,15 +127,6 @@ final class AuthenticationManager {
         }
     }
 
-    void setContext(@NonNull Context context) {
-        if (mContext == null) {
-            mContext = context.getApplicationContext();
-            LocalBroadcastManager.getInstance(mContext)
-                    .registerReceiver(instance.mapViewError401BroadcastReceiver,
-                            new IntentFilter(INTENT_FILTER_TILE_HTTP_CODE_401));
-        }
-    }
-
     Context getContext() {
         return mContext;
     }
@@ -156,40 +141,56 @@ final class AuthenticationManager {
         }
     }
 
-    void regenerateAccessToken() throws CedarMapsException {
+    void generateAccessToken() {
+        if (TextUtils.isEmpty(mClientID)) {
+            return;
+        }
+        if (TextUtils.isEmpty(mClientSecret)) {
+            return;
+        }
+        if (mContext == null) {
+            return;
+        }
+
         if (isFetchingNewAccessToken) {
             return;
         }
         isFetchingNewAccessToken = true;
         invalidateCredentials();
 
-        Mapbox.getInstance(getContext(), Constants.INITIAL_TOKEN);
+        if (Mapbox.getAccessToken() == null) {
+            Mapbox.getInstance(mContext, INITIAL_TOKEN);
+        } else {
+            Mapbox.setAccessToken(INITIAL_TOKEN);
+        }
 
-        fetchAccessTokenFromServer(new AccessTokenListener() {
-            @Override
-            public void onSuccess(@NonNull String accessToken) {
-                isFetchingNewAccessToken = false;
-                if (!TextUtils.isEmpty(accessToken)) {
-                    Mapbox.setAccessToken("pk." + accessToken);
-
-                    Intent intent = new Intent(ACCESS_TOKEN_READY_INTENT);
-                    LocalBroadcastManager.getInstance(getContext()).sendBroadcast(intent);
+        try {
+            fetchAccessTokenFromServer(new AccessTokenListener() {
+                @Override
+                public void onSuccess(@NonNull String accessToken) {
+                    isFetchingNewAccessToken = false;
+                    if (!TextUtils.isEmpty(accessToken)) {
+                        Mapbox.setAccessToken("pk." + accessToken);
+                    }
                 }
-            }
 
-            @Override
-            public void onFailure(@NonNull String error) {
-                isFetchingNewAccessToken = false;
-            }
-        });
+                @Override
+                public void onFailure(@NonNull String error) {
+                    isFetchingNewAccessToken = false;
+                }
+            });
+        } catch (Exception e) {
+            isFetchingNewAccessToken = false;
+            e.printStackTrace();
+        }
     }
 
-    private void saveAccessToken() throws CedarMapsException {
+    private void saveAccessToken() throws Exception {
         if (TextUtils.isEmpty(mAccessToken)) {
-            throw new CedarMapsException("AccessToken is not available to save. Try calling 'getAccessToken' first.");
+            throw new Exception("AccessToken is not available to save. Try calling 'getAccessToken' first.");
         }
         if (mContext == null) {
-            throw new CedarMapsException("Context is not set. Please call 'setContext' method on CedarMaps.getInstance()");
+            throw new Exception("Context is not set. Please call 'setContext' method on CedarMaps.getInstance()");
         }
         SharedPreferences sharedPreferences = mContext.getSharedPreferences(SAVED_ACCESS_TOKEN_KEY, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
@@ -198,9 +199,9 @@ final class AuthenticationManager {
     }
 
     @Nullable
-    String getSavedAccessToken() throws CedarMapsException {
+    String getSavedAccessToken() throws Exception {
         if (mContext == null) {
-            throw new CedarMapsException("Context is not set. Please call 'setContext' method on CedarMaps.getInstance()");
+            throw new Exception("Context is not set. Please call 'setContext' method on CedarMaps.getInstance()");
         }
 
         SharedPreferences sharedPreferences = mContext.getSharedPreferences(SAVED_ACCESS_TOKEN_KEY, Context.MODE_PRIVATE);
@@ -223,10 +224,9 @@ final class AuthenticationManager {
         }
     }
 
-    private void fetchAccessTokenFromServer(final AccessTokenListener completionHandler) throws CedarMapsException {
-
+    private void fetchAccessTokenFromServer(final AccessTokenListener completionHandler) throws Exception {
         if (mContext == null) {
-            throw new CedarMapsException("Context is not set. Please call 'setContext' method on CedarMaps.getInstance()");
+            throw new Exception("Context is not set. Please call 'setContext' method on CedarMaps.getInstance()");
         }
 
         OkHttpClient client = CedarOkHttpClient.getSharedInstance(mContext);
@@ -256,7 +256,7 @@ final class AuthenticationManager {
             }
 
             @Override
-            public void onResponse(Call call, final Response response) throws IOException {
+            public void onResponse(Call call, final Response response) {
                 ResponseBody body = response.body();
                 if (body == null) {
                     handler.post(new Runnable() {
@@ -283,12 +283,12 @@ final class AuthenticationManager {
                                         }
                                     }
                                 });
-                            } catch (final UnsupportedEncodingException ignore) {
+                            } catch (final UnsupportedEncodingException e) {
                                 handler.post(new Runnable() {
                                     @Override
                                     public void run() {
                                         if (completionHandler != null) {
-                                            completionHandler.onFailure(ignore.getMessage());
+                                            completionHandler.onFailure(e.getMessage());
                                         }
                                     }
                                 });

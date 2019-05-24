@@ -1,7 +1,2 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.cedarstudios.cedarmapssdk">
-
-    <application>
-    </application>
-
+<manifest package="com.cedarstudios.cedarmapssdk">
 </manifest>

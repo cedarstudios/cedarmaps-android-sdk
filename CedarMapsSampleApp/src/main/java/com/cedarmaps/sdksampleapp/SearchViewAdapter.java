@@ -70,22 +70,22 @@ public class SearchViewAdapter extends RecyclerView.Adapter<SearchViewAdapter.Se
                 mCityTextView.setVisibility(View.GONE);
             }
 
-            String locality = null;
+            StringBuilder locality = null;
             if (item.getComponents() != null && item.getComponents().getLocalities() != null) {
                 for (int i = 0; i < Math.min(item.getComponents().getLocalities().size(), 3); i++) {
                     String l = item.getComponents().getLocalities().get(i);
                     if (locality == null) {
-                        locality = l;
+                        locality = new StringBuilder(l);
                     } else {
-                        locality = locality + "، " + l;
+                        locality.append("، ").append(l);
                     }
                 }
             }
-            if (TextUtils.isEmpty(locality)) {
+            if (TextUtils.isEmpty(locality != null ? locality.toString() : null)) {
                 mLocalityTextView.setText("");
                 mLocalityTextView.setVisibility(View.GONE);
             } else {
-                mLocalityTextView.setText(locality);
+                mLocalityTextView.setText(locality.toString());
                 mLocalityTextView.setVisibility(View.VISIBLE);
                 if (mCityTextView.getText().length() != 0) {
                     String result = city != null ? city + "،" : "";
@@ -109,14 +109,15 @@ public class SearchViewAdapter extends RecyclerView.Adapter<SearchViewAdapter.Se
         mItems = items;
     }
 
+    @NonNull
     @Override
-    public SearchViewAdapter.SearchViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public SearchViewAdapter.SearchViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View inflatedView = LayoutInflater.from(parent.getContext()).inflate(R.layout.activity_search_autocomplete_item, parent, false);
         return new SearchViewHolder(inflatedView);
     }
 
     @Override
-    public void onBindViewHolder(SearchViewAdapter.SearchViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull SearchViewAdapter.SearchViewHolder holder, int position) {
         ForwardGeocode item = mItems.get(position);
         holder.bindData(item);
     }

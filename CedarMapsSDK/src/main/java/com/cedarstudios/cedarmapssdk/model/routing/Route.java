@@ -38,7 +38,7 @@ public class Route implements Serializable
     @Nullable
     public LatLngBounds getBoundingBox() {
         if (bbox != null && bbox.size() == 4) {
-            ArrayList<LatLng> list = new ArrayList<LatLng>();
+            ArrayList<LatLng> list = new ArrayList<>();
             list.add(new LatLng(bbox.get(1), bbox.get(0)));
             list.add(new LatLng(bbox.get(3), bbox.get(2)));
 
