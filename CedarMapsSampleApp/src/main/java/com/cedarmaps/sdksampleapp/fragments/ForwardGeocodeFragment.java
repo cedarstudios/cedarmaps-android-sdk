@@ -96,7 +96,7 @@ public class ForwardGeocodeFragment extends Fragment {
             CedarMapsStyleConfigurator.configure(
                     CedarMapsStyle.RASTER_LIGHT, new OnStyleConfigurationListener() {
                         @Override
-                        public void onSuccess(Style.Builder styleBuilder) {
+                        public void onSuccess(@NonNull Style.Builder styleBuilder) {
                             mMapboxMap.setStyle(styleBuilder, style ->
                                     circleManager = new CircleManager(mMapView, mMapboxMap, style));
                         }

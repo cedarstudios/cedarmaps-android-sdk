@@ -59,7 +59,7 @@ public class ReverseGeocodeFragment extends Fragment {
 
             CedarMapsStyleConfigurator.configure(CedarMapsStyle.VECTOR_DARK, new OnStyleConfigurationListener() {
                 @Override
-                public void onSuccess(com.mapbox.mapboxsdk.maps.Style.Builder styleBuilder) {
+                public void onSuccess(@NonNull com.mapbox.mapboxsdk.maps.Style.Builder styleBuilder) {
                     mapboxMap.setStyle(styleBuilder);
                 }
 

@@ -50,7 +50,9 @@ public final class CedarMaps {
     private AuthenticationManager authManager = AuthenticationManager.getInstance();
     //endregion
 
-    //region Initializers
+    //region Constructor
+
+    @NonNull
     public static CedarMaps getInstance() {
         if (instance == null) {
             instance = new CedarMaps();
@@ -77,9 +79,11 @@ public final class CedarMaps {
 
     /**
      * This method specifies the result types when using Geocoding APIs. Possible values are "MapID.STREETS" and "MapID.MIX"
+     *
      * @param mapID The map ID
      * @return CedarMaps singleton object
      */
+    @NonNull
     public CedarMaps setMapID(@NonNull MapID mapID) {
         this.mapID = mapID;
         return CedarMaps.getInstance();
@@ -88,9 +92,11 @@ public final class CedarMaps {
     /**
      * Setting your clientID for using CedarMaps API.
      * This method should be called during setup before using any of the CedarMaps methods.
+     *
      * @param clientID The client ID you received for using CedarMaps SDK.
      * @return CedarMaps singleton object; You could use this to continue setting the other parameters such as clientSecret and context.
      */
+    @NonNull
     public CedarMaps setClientID(@NonNull String clientID) {
         authManager.setClientID(clientID);
         return CedarMaps.getInstance();
@@ -99,9 +105,11 @@ public final class CedarMaps {
     /**
      * Setting your clientSecret for using CedarMaps API.
      * This method should be called during setup before using any of the CedarMaps methods.
+     *
      * @param clientSecret The client secret you received for using CedarMaps SDK.
      * @return CedarMaps singleton object; You could use this to continue setting the other parameters such as context.
      */
+    @NonNull
     public CedarMaps setClientSecret(@NonNull String clientSecret) {
         authManager.setClientSecret(clientSecret);
         return CedarMaps.getInstance();
@@ -110,11 +118,13 @@ public final class CedarMaps {
     /**
      * Setting the context for using CedarMaps API.
      * This method should be called during setup before using any of the CedarMaps methods.
+     *
      * @param context You can pass your MainActivity as the context.
      *                We will use applicationContext extracted from what you pass.
      *                This needs to be set only once in the lifetime of your application.
      * @return CedarMaps singleton object.
      */
+    @NonNull
     public CedarMaps setContext(@NonNull Context context) {
         authManager.setContext(context);
         return CedarMaps.getInstance();
@@ -124,15 +134,18 @@ public final class CedarMaps {
      * Setting the baseURL for using CedarMaps API.
      * If you are given a different baseURL for using CedarMaps API, set it here.
      * This method should be called during setup before using any of the CedarMaps methods.
+     *
      * @param url If you pass null, the SDK uses the default baseURL.
      * @return AuthenticationManager singleton object.
      */
+    @NonNull
     public CedarMaps setAPIBaseURL(@Nullable String url) {
         authManager.setAPIBaseURL(url);
         return CedarMaps.getInstance();
     }
     //endregion
 
+    @Nullable
     public String getSavedAccessToken() throws Exception {
         return authManager.getSavedAccessToken();
     }
@@ -141,100 +154,230 @@ public final class CedarMaps {
      * Forward Geocoding. You can use this method to obtain address info about the entered query.
      * This method works asynchronously and returns immediately.
      *
-     * @param searchTerm Wherever you want to get info about
+     * @param searchTerm        Wherever you want to get info about
      * @param completionHandler The handler to notify when Forward Geocode results are ready with success or error.
-     *                          The handler is called on UIThread.
      */
-    public void forwardGeocode(@NonNull String searchTerm, @NonNull ForwardGeocodeResultsListener completionHandler) {
-        forwardGeocode(searchTerm, null, completionHandler);
+    public void forwardGeocode(@NonNull String searchTerm, @NonNull final ForwardGeocodeResultsListener completionHandler) {
+        forwardGeocode(searchTerm, null, null, null, null, 30, completionHandler);
     }
 
     /**
      * Forward Geocoding. You can use this method to obtain address info about the entered query.
      * This method works asynchronously and returns immediately.
      *
-     * @param searchTerm Wherever you want to get info about
-     * @param type       Possible values are: locality, roundabout, street, freeway, expressway, boulevard (You can mix types by separating them with ",")
+     * @param searchTerm        Wherever you want to get info about
+     * @param limit             Number of results
      * @param completionHandler The handler to notify when Forward Geocode results are ready with success or error.
-     *                          The handler methods are called on UIThread.
      */
-    public void forwardGeocode(@NonNull String searchTerm, String type, @NonNull ForwardGeocodeResultsListener completionHandler) {
-        forwardGeocode(searchTerm, type, 30, completionHandler);
+    public void forwardGeocode(@NonNull String searchTerm, int limit, @NonNull final ForwardGeocodeResultsListener completionHandler) {
+        forwardGeocode(searchTerm, null, null, null, null, limit, completionHandler);
+    }
+
+
+    /**
+     * Forward Geocoding. You can use this method to obtain address info about the entered query.
+     * This method works asynchronously and returns immediately.
+     *
+     * @param searchTerm        Wherever you want to get info about
+     * @param type              Possible values are: locality, roundabout, street, freeway, expressway, boulevard (You can mix types by separating them with ",")
+     * @param completionHandler The handler to notify when Forward Geocode results are ready with success or error.
+     */
+    public void forwardGeocode(@NonNull String searchTerm, @NonNull String type, @NonNull final ForwardGeocodeResultsListener completionHandler) {
+        forwardGeocode(searchTerm, null, null, null, type, 30, completionHandler);
     }
 
     /**
      * Forward Geocoding. You can use this method to obtain address info about the entered query.
      * This method works asynchronously and returns immediately.
      *
-     * @param searchTerm Wherever you want to get info about
-     * @param type       Possible values are: locality, roundabout, street, freeway, expressway, boulevard (You can mix types by separating them with ",")
-     * @param limit      Number of results
+     * @param searchTerm        Wherever you want to get info about
+     * @param type              Possible values are: locality, roundabout, street, freeway, expressway, boulevard (You can mix types by separating them with ",")
+     * @param limit             Number of results
      * @param completionHandler The handler to notify when Forward Geocode results are ready with success or error.
-     *                          The handler methods are called on UIThread.
      */
-    public void forwardGeocode(String searchTerm, String type, int limit, @NonNull ForwardGeocodeResultsListener completionHandler) {
-        forwardGeocode(searchTerm, null, -1, null, type, limit, completionHandler);
+    public void forwardGeocode(@NonNull String searchTerm, @NonNull String type, int limit, @NonNull final ForwardGeocodeResultsListener completionHandler) {
+        forwardGeocode(searchTerm, null, null, null, type, limit, completionHandler);
     }
 
     /**
      * Forward Geocoding. You can use this method to obtain address info about the entered query.
      * This method works asynchronously and returns immediately.
      *
-     * @param searchTerm Wherever you want to get info about
-     * @param location   Center point. should be accompanied with distance param
-     * @param distance   GeoRouting from location. Unit is km, 0.1 means 100 meters
+     * @param searchTerm        Wherever you want to get info about
+     * @param centerAndRadius   Center point and accompanying Radius distance. Radius unit is km, 0.1 means 100 meters. This is a necessity for the system.
+     *                          If this is set to non null, proximity will be ignored.
      * @param completionHandler The handler to notify when Forward Geocode results are ready with success or error.
-     *                          The handler methods are called on UIThread.
      */
-    public void forwardGeocode(String searchTerm, LatLng location, float distance, @NonNull ForwardGeocodeResultsListener completionHandler) {
-        forwardGeocode(searchTerm, location, distance, null, null, 30, completionHandler);
+    public void forwardGeocode(@NonNull String searchTerm, @NonNull Pair<LatLng, Float> centerAndRadius, @NonNull final ForwardGeocodeResultsListener completionHandler) {
+        forwardGeocode(searchTerm, centerAndRadius, null, null, null, 30, completionHandler);
     }
 
     /**
      * Forward Geocoding. You can use this method to obtain address info about the entered query.
      * This method works asynchronously and returns immediately.
      *
-     * @param searchTerm Wherever you want to get info about
-     * @param location   Center point. should be accompanied with distance param
-     * @param distance   GeoRouting from location. Unit is km, 0.1 means 100 meters
-     * @param type       Possible values are: locality, roundabout, street, freeway, expressway, boulevard (You can mix types by separating them with ",")
+     * @param searchTerm        Wherever you want to get info about
+     * @param centerAndRadius   Center point and accompanying Radius distance. Radius unit is km, 0.1 means 100 meters. This is a necessity for the system.
+     * @param type              Possible values are: locality, roundabout, street, freeway, expressway, boulevard (You can mix types by separating them with ",")
      * @param completionHandler The handler to notify when Forward Geocode results are ready with success or error.
-     *                          The handler methods are called on UIThread.
      */
-    public void forwardGeocode(String searchTerm, LatLng location, float distance, String type, @NonNull ForwardGeocodeResultsListener completionHandler) {
-        forwardGeocode(searchTerm, location, distance, null, type, 30, completionHandler);
+    public void forwardGeocode(@NonNull String searchTerm, @NonNull Pair<LatLng, Float> centerAndRadius, @NonNull String type, @NonNull final ForwardGeocodeResultsListener completionHandler) {
+        forwardGeocode(searchTerm, centerAndRadius, null, null, type, 30, completionHandler);
     }
 
     /**
      * Forward Geocoding. You can use this method to obtain address info about the entered query.
      * This method works asynchronously and returns immediately.
      *
-     * @param searchTerm Wherever you want to get info about
-     * @param location   Center point. should be accompanied with distance param
-     * @param distance   GeoRouting from location. Unit is km, 0.1 means 100 meters
-     * @param type       Possible values are: locality, roundabout, street, freeway, expressway, boulevard (You can mix types by separating them with ",")
-     * @param limit      Number of results
+     * @param searchTerm        Wherever you want to get info about
+     * @param centerAndRadius   Center point and accompanying Radius distance. Radius unit is km, 0.1 means 100 meters. This is a necessity for the system.
+     *                          If this is set to non null, proximity will be ignored.
+     * @param limit             Number of results
      * @param completionHandler The handler to notify when Forward Geocode results are ready with success or error.
-     *                          The handler methods are called on UIThread.
      */
-    public void forwardGeocode(String searchTerm, LatLng location, float distance, String type, int limit, @NonNull ForwardGeocodeResultsListener completionHandler) {
-        forwardGeocode(searchTerm, location, distance, null, type, limit, completionHandler);
+    public void forwardGeocode(@NonNull String searchTerm, @NonNull Pair<LatLng, Float> centerAndRadius, int limit, @NonNull final ForwardGeocodeResultsListener completionHandler) {
+        forwardGeocode(searchTerm, centerAndRadius, null, null, null, limit, completionHandler);
     }
 
     /**
      * Forward Geocoding. You can use this method to obtain address info about the entered query.
      * This method works asynchronously and returns immediately.
      *
-     * @param searchTerm Wherever you want to get info about
-     * @param location   Center point. should be accompanied with distance param
-     * @param distance   GeoRouting from location. Unit is km, 0.1 means 100 meters
-     * @param bounds     Specifies the bounding box to search inside.
-     * @param type       Possible values are: locality, roundabout, street, freeway, expressway, boulevard (You can mix types by separating them with ",")
-     * @param limit      Number of results
+     * @param searchTerm        Wherever you want to get info about
+     * @param centerAndRadius   Center point and accompanying Radius distance. Radius unit is km, 0.1 means 100 meters. This is a necessity for the system.
+     *                          If this is set to non null, proximity will be ignored.
+     * @param type              Possible values are: locality, roundabout, street, freeway, expressway, boulevard (You can mix types by separating them with ",")
+     * @param limit             Number of results
+     * @param completionHandler The handler to notify when Forward Geocode results are ready with success or error.
+     */
+    public void forwardGeocode(@NonNull String searchTerm, @NonNull Pair<LatLng, Float> centerAndRadius, @NonNull String type, int limit, @NonNull final ForwardGeocodeResultsListener completionHandler) {
+        forwardGeocode(searchTerm, centerAndRadius, null, null, type, limit, completionHandler);
+    }
+
+    /**
+     * Forward Geocoding. You can use this method to obtain address info about the entered query.
+     * This method works asynchronously and returns immediately.
+     *
+     * @param searchTerm        Wherever you want to get info about
+     * @param proximity         Center point around which search is performed. This is a hint for the system.
+     * @param completionHandler The handler to notify when Forward Geocode results are ready with success or error.
+     */
+    public void forwardGeocode(@NonNull String searchTerm, @NonNull LatLng proximity, @NonNull final ForwardGeocodeResultsListener completionHandler) {
+        forwardGeocode(searchTerm, null, null, proximity, null, 30, completionHandler);
+    }
+
+    /**
+     * Forward Geocoding. You can use this method to obtain address info about the entered query.
+     * This method works asynchronously and returns immediately.
+     *
+     * @param searchTerm        Wherever you want to get info about
+     * @param proximity         Center point around which search is performed. This is a hint for the system.
+     * @param limit             Number of results
+     * @param completionHandler The handler to notify when Forward Geocode results are ready with success or error.
+     */
+    public void forwardGeocode(@NonNull String searchTerm, @NonNull LatLng proximity, int limit, @NonNull final ForwardGeocodeResultsListener completionHandler) {
+        forwardGeocode(searchTerm, null, null, proximity, null, limit, completionHandler);
+    }
+
+    /**
+     * Forward Geocoding. You can use this method to obtain address info about the entered query.
+     * This method works asynchronously and returns immediately.
+     *
+     * @param searchTerm        Wherever you want to get info about
+     * @param proximity         Center point around which search is performed. This is a hint for the system.
+     * @param type              Possible values are: locality, roundabout, street, freeway, expressway, boulevard (You can mix types by separating them with ",")
+     * @param completionHandler The handler to notify when Forward Geocode results are ready with success or error.
+     */
+    public void forwardGeocode(@NonNull String searchTerm, @NonNull LatLng proximity, @NonNull String type, @NonNull final ForwardGeocodeResultsListener completionHandler) {
+        forwardGeocode(searchTerm, null, null, proximity, type, 30, completionHandler);
+    }
+
+    /**
+     * Forward Geocoding. You can use this method to obtain address info about the entered query.
+     * This method works asynchronously and returns immediately.
+     *
+     * @param searchTerm        Wherever you want to get info about
+     * @param proximity         Center point around which search is performed. This is a hint for the system.
+     * @param type              Possible values are: locality, roundabout, street, freeway, expressway, boulevard (You can mix types by separating them with ",")
+     * @param limit             Number of results
+     * @param completionHandler The handler to notify when Forward Geocode results are ready with success or error.
+     */
+    public void forwardGeocode(@NonNull String searchTerm, @NonNull LatLng proximity, @NonNull String type, int limit, @NonNull final ForwardGeocodeResultsListener completionHandler) {
+        forwardGeocode(searchTerm, null, null, proximity, type, limit, completionHandler);
+    }
+
+    /**
+     * Forward Geocoding. You can use this method to obtain address info about the entered query.
+     * This method works asynchronously and returns immediately.
+     *
+     * @param searchTerm        Wherever you want to get info about
+     * @param bounds            Specifies the bounding box to search inside.
+     *                          If this is set to non null, proximity will be ignored.
+     * @param completionHandler The handler to notify when Forward Geocode results are ready with success or error.
+     */
+    public void forwardGeocode(@NonNull String searchTerm, @NonNull LatLngBounds bounds, @NonNull final ForwardGeocodeResultsListener completionHandler) {
+        forwardGeocode(searchTerm, null, bounds, null, null, 30, completionHandler);
+    }
+
+    /**
+     * Forward Geocoding. You can use this method to obtain address info about the entered query.
+     * This method works asynchronously and returns immediately.
+     *
+     * @param searchTerm        Wherever you want to get info about
+     * @param bounds            Specifies the bounding box to search inside.
+     *                          If this is set to non null, proximity will be ignored.
+     * @param type              Possible values are: locality, roundabout, street, freeway, expressway, boulevard (You can mix types by separating them with ",")
+     * @param completionHandler The handler to notify when Forward Geocode results are ready with success or error.
+     */
+    public void forwardGeocode(@NonNull String searchTerm, @NonNull LatLngBounds bounds, @NonNull String type, @NonNull final ForwardGeocodeResultsListener completionHandler) {
+        forwardGeocode(searchTerm, null, bounds, null, type, 30, completionHandler);
+    }
+
+    /**
+     * Forward Geocoding. You can use this method to obtain address info about the entered query.
+     * This method works asynchronously and returns immediately.
+     *
+     * @param searchTerm        Wherever you want to get info about
+     * @param bounds            Specifies the bounding box to search inside.
+     *                          If this is set to non null, proximity will be ignored.
+     * @param limit             Number of results
+     * @param completionHandler The handler to notify when Forward Geocode results are ready with success or error.
+     */
+    public void forwardGeocode(@NonNull String searchTerm, @NonNull LatLngBounds bounds, int limit, @NonNull final ForwardGeocodeResultsListener completionHandler) {
+        forwardGeocode(searchTerm, null, bounds, null, null, limit, completionHandler);
+    }
+
+    /**
+     * Forward Geocoding. You can use this method to obtain address info about the entered query.
+     * This method works asynchronously and returns immediately.
+     *
+     * @param searchTerm        Wherever you want to get info about
+     * @param bounds            Specifies the bounding box to search inside.
+     *                          If this is set to non null, proximity will be ignored.
+     * @param type              Possible values are: locality, roundabout, street, freeway, expressway, boulevard (You can mix types by separating them with ",")
+     * @param limit             Number of results
+     * @param completionHandler The handler to notify when Forward Geocode results are ready with success or error.
+     */
+    public void forwardGeocode(@NonNull String searchTerm, @NonNull LatLngBounds bounds, @NonNull String type, int limit, @NonNull final ForwardGeocodeResultsListener completionHandler) {
+        forwardGeocode(searchTerm, null, bounds, null, type, limit, completionHandler);
+    }
+
+    /**
+     * Forward Geocoding. You can use this method to obtain address info about the entered query.
+     * This method works asynchronously and returns immediately.
+     *
+     * @param searchTerm        Wherever you want to get info about
+     * @param centerAndRadius   Center point and accompanying Radius distance. Radius unit is km, 0.1 means 100 meters. This is a necessity for the system.
+     *                          If this is set to non null, proximity will be ignored.
+     * @param bounds            Specifies the bounding box to search inside.
+     *                          If this is set to non null, proximity will be ignored.
+     * @param proximity         Center point around which search is performed. This is a hint for the system.
+     * @param type              Possible values are: locality, roundabout, street, freeway, expressway, boulevard (You can mix types by separating them with ",")
+     * @param limit             Number of results
      * @param completionHandler The handler to notify when Forward Geocode results are ready with success or error.
      *                          The handler methods are called on UIThread.
      */
-    public void forwardGeocode(String searchTerm, LatLng location, float distance, LatLngBounds bounds, String type, int limit, @NonNull final ForwardGeocodeResultsListener completionHandler) {
+    public void forwardGeocode(@NonNull String searchTerm, @Nullable Pair<LatLng, Float> centerAndRadius, @Nullable LatLngBounds bounds, @Nullable LatLng proximity, @Nullable String type, int limit, @NonNull final ForwardGeocodeResultsListener completionHandler) {
         String term;
 
         try {
@@ -248,15 +391,23 @@ public final class CedarMaps {
                 mapID.toString(),
                 term);
 
-        url += String.format(Locale.ENGLISH, "?limit=%s", limit);
+        int normalizedLimit = limit > 0 ? limit : 30;
+        url += String.format(Locale.ENGLISH, "?limit=%s", normalizedLimit);
 
-        if (location != null) {
-            url += String.format(Locale.ENGLISH, "&location=%1$s,%2$s&distance=%3$s", location.getLatitude(), location.getLongitude(), distance);
+        if (centerAndRadius != null && centerAndRadius.first != null && centerAndRadius.second != null) {
+            url += String.format(Locale.ENGLISH, "&location=%1$s,%2$s&distance=%3$s",
+                    centerAndRadius.first.getLatitude(),
+                    centerAndRadius.first.getLongitude(),
+                    centerAndRadius.second);
         }
 
         if (bounds != null) {
             url += String.format(Locale.ENGLISH, "&ne=%1$s,%2$s", bounds.getNorthEast().getLatitude(), bounds.getNorthEast().getLongitude());
             url += String.format(Locale.ENGLISH, "&sw=%1$s,%2$s", bounds.getSouthWest().getLatitude(), bounds.getSouthWest().getLongitude());
+        }
+
+        if (proximity != null && bounds == null && centerAndRadius == null) {
+            url += String.format(Locale.ENGLISH, "&proximity=%1$s,%2$s", proximity.getLatitude(), proximity.getLongitude());
         }
 
         if (!TextUtils.isEmpty(type)) {
@@ -295,7 +446,7 @@ public final class CedarMaps {
      * Gives an address based on a provided coordinate.
      * This method works asynchronously and returns immediately.
      *
-     * @param coordinate The coordinate to get the address from.
+     * @param coordinate        The coordinate to get the address from.
      * @param completionHandler The handler to notify when Reverse Geocode results are ready with success or error.
      *                          The handler methods are called on UIThread.
      */
@@ -336,8 +487,8 @@ public final class CedarMaps {
     /**
      * This method calculates the distance between two points in meters.
      *
-     * @param start Starting coordinate
-     * @param end Ending coordinate
+     * @param start             Starting coordinate
+     * @param end               Ending coordinate
      * @param completionHandler The handler to notify when Geo Routing results are ready with success or error.
      *                          The handler methods are called on UIThread.
      */
@@ -380,7 +531,7 @@ public final class CedarMaps {
      * This method calculates the distance between points in meters. It can be called with up to 15 pairs
      * This API call needs a valid access token.
      *
-     * @param coordinatePairs Set up to 15 pairs of (Start, End).
+     * @param coordinatePairs   Set up to 15 pairs of (Start, End).
      * @param completionHandler The handler to notify when Geo Routing results are ready with success or error.
      *                          The handler methods are called on UIThread.
      */
@@ -432,8 +583,8 @@ public final class CedarMaps {
     /**
      * This method calculates the detailed coordinates of the route between two points.
      *
-     * @param start Starting coordinate
-     * @param end Ending coordinate
+     * @param start             Starting coordinate
+     * @param end               Ending coordinate
      * @param completionHandler The handler to notify when Geo Routing results are ready with success or error.
      *                          The handler methods are called on UIThread.
      */
@@ -448,9 +599,9 @@ public final class CedarMaps {
     /**
      * This method calculates the detailed coordinates of the route between two points with textual instructions.
      *
-     * @param start Starting coordinate
-     * @param end Ending coordinate
-     * @param locale Identifier for language. Currently Locale("fa") and Locale("en") are supported.
+     * @param start             Starting coordinate
+     * @param end               Ending coordinate
+     * @param locale            Identifier for language. Currently Locale("fa") and Locale("en") are supported.
      * @param completionHandler The handler to notify when Geo Routing results are ready with success or error.
      *                          The handler methods are called on UIThread.
      */
@@ -465,7 +616,7 @@ public final class CedarMaps {
     /**
      * This method calculates the detailed coordinates of the route between two consecutive points. It can be called with up to 50 pairs
      *
-     * @param coordinatePairs Set up to 50 pairs of (Start, End).
+     * @param coordinatePairs   Set up to 50 pairs of (Start, End).
      * @param completionHandler The handler to notify when Geo Routing results are ready with success or error.
      *                          The handler methods are called on UIThread.
      */
@@ -477,8 +628,8 @@ public final class CedarMaps {
     /**
      * This method calculates the detailed coordinates of the route between two consecutive points with textual instructions. It can be called with up to 50 pairs
      *
-     * @param coordinatePairs Set up to 50 pairs of (Start, End).
-     * @param locale Identifier for language. Currently Locale("fa") and Locale("en") are supported.
+     * @param coordinatePairs   Set up to 50 pairs of (Start, End).
+     * @param locale            Identifier for language. Currently Locale("fa") and Locale("en") are supported.
      * @param completionHandler The handler to notify when Geo Routing results are ready with success or error.
      *                          The handler methods are called on UIThread.
      */
@@ -539,11 +690,11 @@ public final class CedarMaps {
     /**
      * This method creates a static image of map for the entered location.
      *
-     * @param width Width of the required image in pixels. (not dp)
-     * @param height Height of the required image in pixels. (not dp)
-     * @param zoomLevel An integer for the required zoom level. Valid from 6 to 17.
-     * @param centerPoint The center of the map in the image. If you pass null, make sure to fill the markers array. The boundary will be automatically set to show all the markers.
-     * @param markers An array of StaticMarker objects. The markers will be drawn on the resulting image.
+     * @param width             Width of the required image in pixels. (not dp)
+     * @param height            Height of the required image in pixels. (not dp)
+     * @param zoomLevel         An integer for the required zoom level. Valid from 6 to 17.
+     * @param centerPoint       The center of the map in the image. If you pass null, make sure to fill the markers array. The boundary will be automatically set to show all the markers.
+     * @param markers           An array of StaticMarker objects. The markers will be drawn on the resulting image.
      * @param completionHandler The handler to notify when static image Bitmap is ready with success or error.
      *                          The handler methods are called on UIThread.
      */
@@ -561,7 +712,7 @@ public final class CedarMaps {
         StringBuilder paramMarkers = new StringBuilder();
         if (markers != null && markers.size() > 0) {
             paramMarkers = new StringBuilder("?markers=");
-            for (StaticMarker marker: markers) {
+            for (StaticMarker marker : markers) {
                 String item = String.format(Locale.ENGLISH, "%s|%f,%f|",
                         marker.getMarkerUri() == null ? "marker-default" : marker.getMarkerUri().toString(),
                         marker.getCoordinate().getLatitude(),
@@ -604,6 +755,7 @@ public final class CedarMaps {
 
     private interface NetworkResponseBodyCompletionHandler {
         void onSuccess(ResponseBody responseBody);
+
         void onFailure(String errorMessage);
     }
 

@@ -11,7 +11,7 @@ public interface OnStyleConfigurationListener {
     /**
      * This method is called on UiThread when the tiles are configured successfully.
      */
-    void onSuccess(Style.Builder styleBuilder);
+    void onSuccess(@NonNull Style.Builder styleBuilder);
 
     /**
      * This method is called on UiThread when configuring the tiles is failed.

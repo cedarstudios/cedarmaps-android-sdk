@@ -89,7 +89,7 @@ public class DirectionFragment extends Fragment {
                     CedarMapsStyle.VECTOR_LIGHT, new OnStyleConfigurationListener() {
                         @SuppressWarnings("ConstantConditions")
                         @Override
-                        public void onSuccess(Style.Builder styleBuilder) {
+                        public void onSuccess(@NonNull Style.Builder styleBuilder) {
                             mapboxMap.setStyle(styleBuilder, style -> {
                                 style.addImage(DEPARTURE_IMAGE, ContextCompat.getDrawable(getContext(), R.drawable.cedarmaps_marker_icon_start));
                                 style.addImage(DESTINATION_IMAGE, ContextCompat.getDrawable(getContext(), R.drawable.cedarmaps_marker_icon_end));

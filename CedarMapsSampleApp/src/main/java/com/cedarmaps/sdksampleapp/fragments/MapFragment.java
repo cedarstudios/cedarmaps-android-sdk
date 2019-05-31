@@ -80,7 +80,7 @@ public class MapFragment extends Fragment implements PermissionsListener {
             CedarMapsStyleConfigurator.configure(
                     CedarMapsStyle.VECTOR_LIGHT, new OnStyleConfigurationListener() {
                         @Override
-                        public void onSuccess(Style.Builder styleBuilder) {
+                        public void onSuccess(@NonNull Style.Builder styleBuilder) {
                             mapboxMap.setStyle(styleBuilder, style -> {
                                 if (getActivity() == null) {
                                     return;
