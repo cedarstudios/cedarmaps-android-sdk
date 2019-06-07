@@ -156,12 +156,9 @@ final class AuthenticationManager {
             return;
         }
         isFetchingNewAccessToken = true;
-        invalidateCredentials();
 
         if (Mapbox.getAccessToken() == null) {
             Mapbox.getInstance(mContext, INITIAL_TOKEN);
-        } else {
-            Mapbox.setAccessToken(INITIAL_TOKEN);
         }
 
         try {
@@ -294,6 +291,7 @@ final class AuthenticationManager {
                                 });
                             }
                         } else if (response.code() == 401) {
+                            invalidateCredentials();
                             handler.post(new Runnable() {
                                 @Override
                                 public void run() {
