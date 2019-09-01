@@ -2,7 +2,7 @@
 
 This guide will take you through the process of integrating CedarMaps into your Android application.
 
-All the mentioned methods and tools in this document have been tested on Android Studio v3.4.1.
+All the mentioned methods and tools in this document have been tested on Android Studio v3.5.
 
 ## Table of Contents
 - [Installation](#installation)
@@ -38,7 +38,7 @@ Then, add this to the `build.gradle` of your **app** module:
 
 ```groovy
 dependencies {
-    implementation 'com.cedarmaps:CedarMapsSDK:4.0.2'
+    implementation 'com.cedarmaps:CedarMapsSDK:4.1.0'
 }
 ```
 
