@@ -133,7 +133,7 @@ You should use `CedarMapsStyleConfigurator` to configure a style and then set it
 You can choose between 3 different styles:
 * `VECTOR_LIGHT`
 * `VECTOR_DARK`
-* `RASTER_DARK`
+* `RASTER_LIGHT`
 
 Using **Vector** styles is recommended.
 
