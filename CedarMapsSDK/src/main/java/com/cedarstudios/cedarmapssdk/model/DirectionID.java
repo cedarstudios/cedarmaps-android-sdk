@@ -1,6 +1,6 @@
 package com.cedarstudios.cedarmapssdk.model;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 public enum DirectionID {
     DRIVING {

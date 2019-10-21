@@ -1,6 +1,6 @@
 package com.cedarstudios.cedarmapssdk;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 public enum CedarMapsStyle {
     VECTOR_LIGHT {

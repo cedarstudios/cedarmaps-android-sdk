@@ -4,10 +4,10 @@ import android.annotation.SuppressLint;
 import android.graphics.BitmapFactory;
 import android.location.Location;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.design.widget.FloatingActionButton;
-import android.support.v4.app.Fragment;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import androidx.fragment.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -193,8 +193,6 @@ public class MapFragment extends Fragment implements PermissionsListener {
                 mapboxMap.getLocationComponent().setRenderMode(RenderMode.COMPASS);
                 break;
             case RenderMode.GPS:
-                mapboxMap.getLocationComponent().setRenderMode(RenderMode.NORMAL);
-                break;
             case RenderMode.COMPASS:
                 mapboxMap.getLocationComponent().setRenderMode(RenderMode.NORMAL);
                 break;
@@ -320,7 +318,7 @@ public class MapFragment extends Fragment implements PermissionsListener {
     }
 
     @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
         menu.clear();
     }
@@ -356,7 +354,10 @@ public class MapFragment extends Fragment implements PermissionsListener {
 
         @Override
         public void onFailure(@NonNull Exception exception) {
-            Log.d("LocationChange", exception.getLocalizedMessage());
+            String message = exception.getLocalizedMessage();
+            if (message != null) {
+                Log.d("LocationChange", message);
+            }
         }
     }
 }

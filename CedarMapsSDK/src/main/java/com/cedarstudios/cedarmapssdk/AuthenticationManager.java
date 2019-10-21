@@ -5,13 +5,14 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Handler;
 import android.os.Looper;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import android.text.TextUtils;
 
 import com.cedarstudios.cedarmapssdk.listeners.AccessTokenListener;
 import com.mapbox.mapboxsdk.Mapbox;
 
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
 
 import java.io.IOException;
@@ -109,8 +110,14 @@ final class AuthenticationManager {
                 handler.post(new Runnable() {
                     @Override
                     public void run() {
-                        completionHandler.onFailure(e.getMessage());
-
+                        String message = e.getLocalizedMessage();
+                        if (message == null) {
+                            message = e.getMessage();
+                        }
+                        if (message == null) {
+                            message = "Unknown error in getting access token occurred.";
+                        }
+                        completionHandler.onFailure(message);
                     }
                 });
             }
@@ -240,20 +247,9 @@ final class AuthenticationManager {
                 .build();
 
         client.newCall(request).enqueue(new Callback() {
-            @Override
-            public void onFailure(Call call, final IOException e) {
-                handler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (completionHandler != null) {
-                            completionHandler.onFailure(e.getMessage());
-                        }
-                    }
-                });
-            }
 
             @Override
-            public void onResponse(Call call, final Response response) {
+            public void onResponse(@NotNull Call call, @NotNull final Response response) {
                 ResponseBody body = response.body();
                 if (body == null) {
                     handler.post(new Runnable() {
@@ -285,7 +281,14 @@ final class AuthenticationManager {
                                     @Override
                                     public void run() {
                                         if (completionHandler != null) {
-                                            completionHandler.onFailure(e.getMessage());
+                                            String message = e.getLocalizedMessage();
+                                            if (message == null) {
+                                                message = e.getMessage();
+                                            }
+                                            if (message == null) {
+                                                message = "Unknown encoding error occurred.";
+                                            }
+                                            completionHandler.onFailure(message);
                                         }
                                     }
                                 });
@@ -318,13 +321,42 @@ final class AuthenticationManager {
                             @Override
                             public void run() {
                                 if (completionHandler != null) {
-                                    completionHandler.onFailure(e.getMessage());
+                                    String message = e.getLocalizedMessage();
+                                    if (message == null) {
+                                        message = e.getMessage();
+                                    }
+                                    if (message == null) {
+                                        message = "Unknown network error occurred.";
+                                    }
+                                    completionHandler.onFailure(message);
                                 }
                             }
                         });
                     }
                 }
+
             }
+
+            @Override
+            public void onFailure(@NotNull Call call, @NotNull final IOException e) {
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (completionHandler != null) {
+                            String message = e.getLocalizedMessage();
+                            if (message == null) {
+                                message = e.getMessage();
+                            }
+                            if (message == null) {
+                                message = "Unknown network error occurred.";
+                            }
+                            completionHandler.onFailure(message);
+                        }
+                    }
+                });
+            }
+
+
         });
     }
 }

@@ -1,32 +1,32 @@
-package com.cedarstudios.cedarmapssdk.model;
+package com.cedarstudios.cedarmapssdk.model.geocoder.reverse;
 
 import androidx.annotation.NonNull;
 
-public enum MapID {
-    STREETS {
+public enum FormattedAddressPrefixLength {
+    SHORT {
         @NonNull
         @Override
         public String toString() {
-            return "cedarmaps.streets";
+            return "short";
         }
     },
 
-    PLACES {
+    LONG {
         @NonNull
         @Override
         public String toString() {
-            return "cedarmaps.places";
+            return "long";
         }
     },
 
-    MIX {
+    NONE {
         @NonNull
         @Override
         public String toString() {
-            return "cedarmaps.mix";
+            return "none";
         }
     };
 
-    @NonNull
-    public abstract String toString();
+    public abstract @NonNull String toString();
+
 }

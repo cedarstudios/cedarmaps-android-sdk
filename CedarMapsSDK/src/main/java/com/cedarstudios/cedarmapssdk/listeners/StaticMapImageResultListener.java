@@ -1,7 +1,7 @@
 package com.cedarstudios.cedarmapssdk.listeners;
 
 import android.graphics.Bitmap;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 /**
  * The listener for obtaining the results of a Static Map Image request.

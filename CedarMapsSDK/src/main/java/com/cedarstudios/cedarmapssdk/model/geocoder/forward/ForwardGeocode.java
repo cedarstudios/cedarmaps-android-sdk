@@ -1,8 +1,8 @@
 
 package com.cedarstudios.cedarmapssdk.model.geocoder.forward;
 
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -36,6 +36,11 @@ public class ForwardGeocode implements Serializable
         put("trunk", "بزرگراه");
         put("trunk_link", "رمپ");
         put("service", "کنارگذر");
+        put("village", "روستا");
+        put("town", "شهرک");
+        put("junction", "تقاطع");
+        put("region", "منطقه");
+        put("state", "استان");
     }};
 
     @SerializedName("id")

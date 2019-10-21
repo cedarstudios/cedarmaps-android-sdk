@@ -7,9 +7,9 @@ import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.Looper;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.v4.util.Pair;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.core.util.Pair;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
 
@@ -22,6 +22,7 @@ import com.cedarstudios.cedarmapssdk.model.DirectionID;
 import com.cedarstudios.cedarmapssdk.model.MapID;
 import com.cedarstudios.cedarmapssdk.model.StaticMarker;
 import com.cedarstudios.cedarmapssdk.model.geocoder.forward.ForwardGeocodeResponse;
+import com.cedarstudios.cedarmapssdk.model.geocoder.reverse.FormattedAddressPrefixLength;
 import com.cedarstudios.cedarmapssdk.model.geocoder.reverse.ReverseGeocodeResponse;
 import com.cedarstudios.cedarmapssdk.model.routing.GeoRoutingResponse;
 import com.mapbox.mapboxsdk.geometry.LatLng;
@@ -442,6 +443,7 @@ public final class CedarMaps {
         });
     }
 
+
     /**
      * Gives an address based on a provided coordinate.
      * This method works asynchronously and returns immediately.
@@ -451,10 +453,52 @@ public final class CedarMaps {
      *                          The handler methods are called on UIThread.
      */
     public void reverseGeocode(LatLng coordinate, final ReverseGeocodeResultListener completionHandler) {
+        reverseGeocode(coordinate,
+                null,
+                FormattedAddressPrefixLength.SHORT,
+                null,
+                false,
+                completionHandler);
+    }
+
+    /**
+     * @param coordinate                          The coordinate to get the address from.
+     * @param addressFormat                       Format string for generated formatted address.
+     *                                            e.g. "{country}{province}{sep}{city}{sep}{locality}{sep}{district}{sep}{address}{sep}{place}"
+     * @param formattedAddressPrefixLength        Length of streets prefix in generated formatted address.
+     *                                            Default is short.
+     * @param formattedAddressSeparator           The separator used in generated formatted address.
+     *                                            Default is "، "
+     * @param shouldOutputVerboseFormattedAddress A boolean indicating if extra information
+     *                                            should be included in generated formatted address
+     *                                            such as نرسیده به and بعد از.
+     * @param completionHandler                   The handler to notify when Reverse Geocode results are ready with success or error.
+     *                                            The handler methods are called on UIThread.
+     */
+    public void reverseGeocode(LatLng coordinate,
+                               @Nullable String addressFormat,
+                               @NonNull FormattedAddressPrefixLength formattedAddressPrefixLength,
+                               @Nullable String formattedAddressSeparator,
+                               boolean shouldOutputVerboseFormattedAddress,
+                               final ReverseGeocodeResultListener completionHandler) {
         String url = String.format(Locale.ENGLISH,
-                authManager.getAPIBaseURL() + "geocode/%1$s/%2$s,%3$s.json",
+                authManager.getAPIBaseURL() + "geocode/%1$s/%2$s,%3$s.json?prefix=%4$s",
                 mapID.toString(),
-                coordinate.getLatitude(), coordinate.getLongitude());
+                coordinate.getLatitude(),
+                coordinate.getLongitude(),
+                formattedAddressPrefixLength.toString());
+
+        if (addressFormat != null && addressFormat.length() > 0) {
+            url += String.format(Locale.ENGLISH, "&format=%1$s", addressFormat);
+        }
+
+        if (formattedAddressSeparator != null) {
+            url += String.format(Locale.ENGLISH, "&separator=%1$s", formattedAddressSeparator);
+        }
+
+        if (shouldOutputVerboseFormattedAddress) {
+            url += String.format(Locale.ENGLISH, "&verbosity=%1$s", "true");
+        }
 
         getResponseBodyFromURL(url, new NetworkResponseBodyCompletionHandler() {
             @Override

@@ -1,14 +1,14 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 28
+    compileSdkVersion 29
 
     defaultConfig {
         applicationId "com.cedarmaps.sdksampleapp"
         minSdkVersion 15
-        targetSdkVersion 28
-        versionCode 98030310
-        versionName "1.5.0"
+        targetSdkVersion 29
+        versionCode 98072910
+        versionName "1.6.0"
 
         vectorDrawables.useSupportLibrary = true
     }
@@ -80,8 +80,7 @@ android.applicationVariants.all { variant ->
 dependencies {
     implementation (project(':CedarMapsSDK'))
     implementation 'com.mapbox.mapboxsdk:mapbox-android-plugin-annotation-v7:0.6.0'
-    implementation 'com.android.support:appcompat-v7:28.0.0'
-    implementation 'com.android.support:design:28.0.0'
-    implementation 'com.android.support:support-vector-drawable:28.0.0'
-    implementation 'com.android.support:support-v4:28.0.0'
+    implementation 'androidx.appcompat:appcompat:1.1.0'
+    implementation 'com.google.android.material:material:1.0.0'
+    implementation 'androidx.vectordrawable:vectordrawable:1.1.0'
 }

@@ -1,6 +1,6 @@
 package com.cedarstudios.cedarmapssdk.listeners;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import com.cedarstudios.cedarmapssdk.model.geocoder.reverse.ReverseGeocode;
 
 /**

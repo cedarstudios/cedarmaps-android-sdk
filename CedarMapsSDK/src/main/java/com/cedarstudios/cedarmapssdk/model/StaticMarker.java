@@ -1,8 +1,8 @@
 package com.cedarstudios.cedarmapssdk.model;
 
 import android.net.Uri;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.cedarstudios.cedarmapssdk.listeners.StaticMapImageResultListener;
 import com.mapbox.mapboxsdk.geometry.LatLng;

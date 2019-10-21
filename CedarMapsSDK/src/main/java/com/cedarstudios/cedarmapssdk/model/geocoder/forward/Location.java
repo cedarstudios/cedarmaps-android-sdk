@@ -1,7 +1,7 @@
 
 package com.cedarstudios.cedarmapssdk.model.geocoder.forward;
 
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 
 import java.io.Serializable;
 import com.google.gson.annotations.Expose;

@@ -1,9 +1,9 @@
 package com.cedarmaps.sdksampleapp;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
-import android.support.v4.app.Fragment;
-import android.support.v7.widget.RecyclerView;
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;

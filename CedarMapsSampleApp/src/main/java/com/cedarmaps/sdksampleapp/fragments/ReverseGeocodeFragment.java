@@ -1,11 +1,13 @@
 package com.cedarmaps.sdksampleapp.fragments;
 
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
-import android.support.v4.app.Fragment;
-import android.support.v7.widget.AppCompatTextView;
+import androidx.fragment.app.Fragment;
+import androidx.appcompat.widget.AppCompatTextView;
+
+import android.os.Message;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -22,6 +24,7 @@ import com.cedarstudios.cedarmapssdk.MapView;
 import com.cedarstudios.cedarmapssdk.listeners.ReverseGeocodeResultListener;
 import com.cedarstudios.cedarmapssdk.CedarMapsStyle;
 import com.cedarstudios.cedarmapssdk.CedarMapsStyleConfigurator;
+import com.cedarstudios.cedarmapssdk.model.geocoder.reverse.FormattedAddressPrefixLength;
 import com.cedarstudios.cedarmapssdk.model.geocoder.reverse.ReverseGeocode;
 import com.mapbox.mapboxsdk.camera.CameraPosition;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
@@ -87,15 +90,23 @@ public class ReverseGeocodeFragment extends Fragment {
         }
         mProgressBar.setVisibility(View.VISIBLE);
 
-        CedarMaps.getInstance().reverseGeocode(
-                position.target,
-                new ReverseGeocodeResultListener() {
+        CedarMaps.getInstance().reverseGeocode(position.target,
+                null,
+                FormattedAddressPrefixLength.SHORT,
+                null,
+                false, new ReverseGeocodeResultListener() {
                     @Override
                     public void onSuccess(@NonNull ReverseGeocode result) {
                         mProgressBar.setVisibility(View.GONE);
                         mTextView.setVisibility(View.VISIBLE);
 
-                        mTextView.setText(fullAddressForItem(result));
+                        String address = result.getFormattedAddress();
+                        if (address != null) {
+                            mTextView.setText(address);
+                        } else {
+                            mTextView.setText(R.string.no_address_available);
+                        }
+
                     }
 
                     @Override
@@ -106,48 +117,6 @@ public class ReverseGeocodeFragment extends Fragment {
                         mTextView.setText(getString(R.string.parse_error));
                     }
                 });
-    }
-
-    private String fullAddressForItem(ReverseGeocode item) {
-        String result = "";
-
-        if (!TextUtils.isEmpty(item.getProvince())) {
-            result += (getString(R.string.province) + " " + item.getProvince());
-        }
-
-        if (!TextUtils.isEmpty(item.getCity())) {
-            if (TextUtils.isEmpty(result)) {
-                result = item.getCity();
-            } else {
-                result = result + getString(R.string.comma) + " " + item.getCity();
-            }
-        }
-
-        if (!TextUtils.isEmpty(item.getLocality())) {
-            if (TextUtils.isEmpty(result)) {
-                result = item.getLocality();
-            } else {
-                result = result + getString(R.string.comma) + " " + item.getLocality();
-            }
-        }
-
-        if (!TextUtils.isEmpty(item.getAddress())) {
-            if (TextUtils.isEmpty(result)) {
-                result = item.getAddress();
-            } else {
-                result = result + getString(R.string.comma) + " " + item.getAddress();
-            }
-        }
-
-        if (!TextUtils.isEmpty(item.getPlace())) {
-            if (TextUtils.isEmpty(result)) {
-                result = item.getPlace();
-            } else {
-                result = result + getString(R.string.comma) + " " + item.getPlace();
-            }
-        }
-
-        return result;
     }
 
     @Override
@@ -201,7 +170,7 @@ public class ReverseGeocodeFragment extends Fragment {
     }
 
     @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
         menu.clear();
     }

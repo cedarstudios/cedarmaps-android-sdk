@@ -1,6 +1,6 @@
 package com.cedarstudios.cedarmapssdk.model.geocoder.reverse;
 
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
@@ -25,6 +25,9 @@ public class ReverseGeocode implements Serializable {
     @SerializedName("locality")
     @Expose
     private String locality;
+    @SerializedName("formatted_address")
+    @Expose
+    private String formattedAddress;
     @SerializedName("district")
     @Expose
     private String district;
@@ -76,6 +79,13 @@ public class ReverseGeocode implements Serializable {
 
     /**
      *
+     * @return Formatted Address
+     */
+    @Nullable
+    public String getFormattedAddress() { return formattedAddress; }
+
+    /**
+     *
      * @return District name
      */
     @Nullable
@@ -109,4 +119,5 @@ public class ReverseGeocode implements Serializable {
     public TrafficZone getTrafficZone() {
         return trafficZone;
     }
+
 }

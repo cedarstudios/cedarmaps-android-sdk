@@ -2,7 +2,7 @@ package com.cedarstudios.cedarmapssdk;
 
 import android.os.Handler;
 import android.os.Looper;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import com.cedarstudios.cedarmapssdk.listeners.AccessTokenListener;
 import com.cedarstudios.cedarmapssdk.listeners.OnStyleConfigurationListener;
@@ -20,7 +20,7 @@ public final class CedarMapsStyleConfigurator {
                     @Override
                     public void run() {
                         String url = style.urlString() + "?access_token=" + accessToken;
-                        Style.Builder builder = new Style.Builder().fromUrl(url);
+                        Style.Builder builder = new Style.Builder().fromUri(url);
                         completionHandler.onSuccess(builder);
                     }
                 });
