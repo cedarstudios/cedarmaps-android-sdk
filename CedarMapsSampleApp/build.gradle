@@ -7,7 +7,7 @@ android {
         applicationId "com.cedarmaps.sdksampleapp"
         minSdkVersion 15
         targetSdkVersion 29
-        versionCode 98072910
+        versionCode 98080410
         versionName "1.6.0"
 
         vectorDrawables.useSupportLibrary = true
@@ -51,9 +51,6 @@ android {
         googlePlay {
             buildConfigField STRING, MARKET, GOOGLE_PLAY
             dimension "dimension"
-            ndk {
-                abiFilters "armeabi-v7a", "arm64-v8a", "x86", "x86_64"
-            }
         }
 
         cafeBazaar {
