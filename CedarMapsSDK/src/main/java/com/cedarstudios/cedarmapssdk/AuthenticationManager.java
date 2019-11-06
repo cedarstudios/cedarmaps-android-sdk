@@ -12,7 +12,6 @@ import android.text.TextUtils;
 import com.cedarstudios.cedarmapssdk.listeners.AccessTokenListener;
 import com.mapbox.mapboxsdk.Mapbox;
 
-import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
 
 import java.io.IOException;
@@ -249,7 +248,7 @@ final class AuthenticationManager {
         client.newCall(request).enqueue(new Callback() {
 
             @Override
-            public void onResponse(@NotNull Call call, @NotNull final Response response) {
+            public void onResponse(Call call, final Response response) {
                 ResponseBody body = response.body();
                 if (body == null) {
                     handler.post(new Runnable() {
@@ -338,7 +337,7 @@ final class AuthenticationManager {
             }
 
             @Override
-            public void onFailure(@NotNull Call call, @NotNull final IOException e) {
+            public void onFailure(Call call, final IOException e) {
                 handler.post(new Runnable() {
                     @Override
                     public void run() {

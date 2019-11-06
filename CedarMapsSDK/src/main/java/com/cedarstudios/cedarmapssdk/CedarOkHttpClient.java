@@ -5,8 +5,6 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import androidx.core.os.ConfigurationCompat;
 
-import org.jetbrains.annotations.NotNull;
-
 import java.io.IOException;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
@@ -27,9 +25,8 @@ final class CedarOkHttpClient {
                 .connectTimeout(30, TimeUnit.SECONDS)
                 .readTimeout(30, TimeUnit.SECONDS)
                 .addNetworkInterceptor(new Interceptor() {
-                    @NotNull
                     @Override
-                    public Response intercept(@NotNull Chain chain) throws IOException {
+                    public Response intercept(Chain chain) throws IOException {
                         String userAgent;
                         if (userAgent(applicationContext) != null) {
                             userAgent = userAgent(applicationContext);

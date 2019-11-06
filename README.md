@@ -38,11 +38,11 @@ Then, add this to the `build.gradle` of your **app** module:
 
 ```groovy
 dependencies {
-    implementation 'com.cedarmaps:CedarMapsSDK:4.2.0'
+    implementation 'com.cedarmaps:CedarMapsSDK:4.2.1'
 }
 ```
 
-**Note:** CedarMaps is using `AndroidX` from version `4.2.0`. The last version to support old `AppCompat` is `4.1.0`.
+**Note:** CedarMaps is using `AndroidX` from version `4.2.0`. The last version to support old `Support Library` is `4.1.0`.
 
 ### Java 8
 
