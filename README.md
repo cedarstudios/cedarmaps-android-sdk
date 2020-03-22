@@ -38,7 +38,7 @@ Then, add this to the `build.gradle` of your **app** module:
 
 ```groovy
 dependencies {
-    implementation 'com.cedarmaps:CedarMapsSDK:4.2.1'
+    implementation 'com.cedarmaps:CedarMapsSDK:4.3.0'
 }
 ```
 
