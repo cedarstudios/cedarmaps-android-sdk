@@ -32,6 +32,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 import okhttp3.Call;
@@ -634,10 +635,10 @@ public final class CedarMaps {
      */
     public void direction(LatLng start, LatLng end, final GeoRoutingResultListener completionHandler) {
 
-        ArrayList<Pair<LatLng, LatLng>> points = new ArrayList<>();
-        points.add(new Pair<>(start, end));
+        ArrayList<LatLng> destinations = new ArrayList<>();
+        destinations.add(end);
 
-        direction(points, false, new Locale("fa"), completionHandler);
+        direction(start, destinations, false, new Locale("fa"), completionHandler);
     }
 
     /**
@@ -651,53 +652,54 @@ public final class CedarMaps {
      */
     public void directionWithInstructions(LatLng start, LatLng end, Locale locale, final GeoRoutingResultListener completionHandler) {
 
-        ArrayList<Pair<LatLng, LatLng>> points = new ArrayList<>();
-        points.add(new Pair<>(start, end));
+        ArrayList<LatLng> destinations = new ArrayList<>();
+        destinations.add(end);
 
-        direction(points, true, locale, completionHandler);
+        direction(start, destinations, true, locale, completionHandler);
     }
 
     /**
-     * This method calculates the detailed coordinates of the route between two consecutive points. It can be called with up to 50 pairs
+     * This method calculates the detailed coordinates of the route between consecutive points. It can be called with up to 50 coordinates.
      *
-     * @param coordinatePairs   Set up to 50 pairs of (Start, End).
+     * @param start             Starting coordinate.
+     * @param destinations      Set up to 49 coordinates.
      * @param completionHandler The handler to notify when Geo Routing results are ready with success or error.
      *                          The handler methods are called on UIThread.
      */
-    public void direction(ArrayList<Pair<LatLng, LatLng>> coordinatePairs, final GeoRoutingResultListener completionHandler) {
-        direction(coordinatePairs, false, new Locale("fa"), completionHandler);
+    public void direction(LatLng start, List<LatLng> destinations, final GeoRoutingResultListener completionHandler) {
+        direction(start, destinations, false, new Locale("fa"), completionHandler);
     }
 
 
     /**
      * This method calculates the detailed coordinates of the route between two consecutive points with textual instructions. It can be called with up to 50 pairs
      *
-     * @param coordinatePairs   Set up to 50 pairs of (Start, End).
+     * @param start             Starting coordinate.
+     * @param destinations      Set up to 49 coordinates.
      * @param locale            Identifier for language. Currently Locale("fa") and Locale("en") are supported.
      * @param completionHandler The handler to notify when Geo Routing results are ready with success or error.
      *                          The handler methods are called on UIThread.
      */
-    public void directionWithInstructions(ArrayList<Pair<LatLng, LatLng>> coordinatePairs, Locale locale, final GeoRoutingResultListener completionHandler) {
-        direction(coordinatePairs, true, locale, completionHandler);
+    public void directionWithInstructions(LatLng start, List<LatLng> destinations, Locale locale, final GeoRoutingResultListener completionHandler) {
+        direction(start, destinations, true, locale, completionHandler);
     }
 
-    private void direction(ArrayList<Pair<LatLng, LatLng>> coordinatePairs, Boolean shouldShowInstructions, Locale locale, final GeoRoutingResultListener completionHandler) {
+    private void direction(LatLng start, List<LatLng> destinations, Boolean shouldShowInstructions, Locale locale, final GeoRoutingResultListener completionHandler) {
 
-        StringBuilder pairs = new StringBuilder();
-        String delimiter = "";
-        for (Pair<LatLng, LatLng> locationPair : coordinatePairs) {
-            if (locationPair.first == null || locationPair.second == null) {
-                continue;
-            }
-            pairs.append(delimiter).append(String.format(Locale.ENGLISH, "%1$s,%2$s;%3$s,%4$s", locationPair.first.getLatitude(),
-                    locationPair.first.getLongitude(), locationPair.second.getLatitude(), locationPair.second.getLongitude()));
-            delimiter = "/";
+        StringBuilder points = new StringBuilder();
+
+        points.append(String.format(Locale.ENGLISH, "%1$s,%2$s", start.getLatitude(),
+                start.getLongitude()));
+
+        for (LatLng destination : destinations) {
+            points.append(";").append(String.format(Locale.ENGLISH, "%1$s,%2$s", destination.getLatitude(),
+                    destination.getLongitude()));
         }
 
         String url = String.format(Locale.ENGLISH,
                 authManager.getAPIBaseURL() + "direction/%1$s/%2$s?instructions=%3$s&locale=%4$s",
                 directionID.toString(),
-                pairs.toString(),
+                points.toString(),
                 shouldShowInstructions ? "true" : "false",
                 locale.getLanguage().contains("fa") ? "fa" : "en"
         );
@@ -742,7 +744,7 @@ public final class CedarMaps {
      * @param completionHandler The handler to notify when static image Bitmap is ready with success or error.
      *                          The handler methods are called on UIThread.
      */
-    public void staticMap(int width, int height, int zoomLevel, @Nullable LatLng centerPoint, @Nullable ArrayList<StaticMarker> markers, final @NonNull StaticMapImageResultListener completionHandler) {
+    public void staticMap(int width, int height, int zoomLevel, @Nullable LatLng centerPoint, @Nullable List<StaticMarker> markers, final @NonNull StaticMapImageResultListener completionHandler) {
         int validZoomLevel = Math.min(17, Math.max(zoomLevel, 6));
         String paramPosition = centerPoint != null ? String.format(Locale.ENGLISH, "%f,%f,%d", centerPoint.getLatitude(), centerPoint.getLongitude(), validZoomLevel) : "auto";
 
